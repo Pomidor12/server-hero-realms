@@ -7,3 +7,85 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ActionCondition {
+  SACRIFICE          @map("sacrifice")
+  FRACTION           @map("fraction")
+  CHOICE             @map("choice")
+  FOR_EVERY_DEFENDER @map("for_every_defender")
+  FOR_EVERY_GURDIAN  @map("for_every_guardian")
+  FOR_EVERY_FRACTION @map("for_every_fraction")
+
+  @@map("action_condition")
+}
+
+enum HeroPlacement {
+  ACTIVE_DECK      @map("active_deck")
+  SELECTION_DECK   @map("selection_deck")
+  RESET_DECK       @map("reset_deck")
+  SACRIFICIAL_DECK @map("sacrificial_deck")
+  TRADING_DECK     @map("trading_deck")
+  TRADING_ROW      @map("trading_row")
+
+  @@map("hero_placement")
+}
+
+model Hero {
+  id            Int           @id @default(autoincrement())
+  playerId      Int?          @map("player_id")
+  Player        Player?       @relation(fields: [playerId], references: [id])
+  battlefieldId Int?          @map("battlefield_id")
+  Battlefield   Battlefield?  @relation(fields: [battlefieldId], references: [id])
+  name          String        @unique @db.VarChar(255)
+  image         String        @db.VarChar(255)
+  fraction      String        @db.VarChar(255)
+  price         Int           @db.Integer()
+  protection    Int           @db.Integer()
+  isGuardian    Boolean       @db.Boolean()
+  placement     HeroPlacement
+  actions       Action[]
+
+  @@map("hero")
+}
+
+model Action {
+  heroId                   Int               @id @default(autoincrement()) @map("hero_id")
+  hero                     Hero              @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  conditions               ActionCondition[] @default([])
+  isOptional               Boolean           @map("is_optional") @db.Boolean()
+  damage                   Int               @db.Integer()
+  heal                     Int               @db.Integer()
+  gold                     Int               @db.Integer()
+  takeCard                 Int               @map("take_card") @db.Integer()
+  resetCard                Int               @map("reset_card") @db.Integer()
+  resetOpponentsCard       Int               @map("reset_opponents_card") @db.Integer()
+  stanOpponentsHero        Int               @map("stan_opponents_hero") @db.Integer()
+  prepareHero              Int               @map("prepare_hero") @db.Integer()
+  putToDeckResetedCard     Int               @map("put_to_deck_reseted_card") @db.Integer()
+  putToDeckResetedDefender Int               @map("put_to_deck_reseted_defender") @db.Integer()
+  putPurchasedCardIntoDeck Int               @map("put_purchased_card_into_deck") @db.Integer()
+
+  @@map("action")
+}
+
+model Player {
+  id                Int          @id @default(autoincrement())
+  battlefieldId     Int?         @map("battlefield_id")
+  Battlefield       Battlefield? @relation(fields: [battlefieldId], references: [id])
+  name              String       @db.VarChar(255)
+  image             String       @db.VarChar(255)
+  health            Int          @db.Integer()
+  currentTurnPlayer Boolean      @default(false) @map("current_turn_player")
+  turnOrder         Int          @db.Integer()
+  heroes            Hero[]
+
+  @@map("player")
+}
+
+model Battlefield {
+  id      Int      @id @default(autoincrement())
+  round   Int      @db.Integer()
+  players Player[]
+  heroes  Hero[]
+
+  @@map("battlefield")
+}

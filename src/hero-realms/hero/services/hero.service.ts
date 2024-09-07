@@ -14,7 +14,17 @@ export class HeoService {
   public async getHeroes() {
     const heroes = await this.db.hero.findMany({ include: { actions: true } });
 
-    return heroes;
+    const normalizedHeroes = heroes.map((hero) => ({
+      ...hero,
+      actions: hero.actions.map((action) => ({
+        ...action,
+        conditions: action.conditions.map(
+          (condition) => CONVERT_ACTION_CONDITION.FROM_DB[condition],
+        ),
+      })),
+    }));
+
+    return normalizedHeroes;
   }
 
   public async applyDataset() {

@@ -4,9 +4,9 @@ export const ACTION_CONDITION = {
   SACRIFICE: 'sacrifice',
   FRACTION: 'fraction',
   CHOICE: 'choice',
-  FOR_EVERY_DEFENDER: 'for_every_defender',
-  FOR_EVERY_GURDIAN: 'for_every_guardian',
-  FOR_EVERY_FRACTION: 'for_every_fraction',
+  FOR_EVERY_DEFENDER: 'for-every-defender',
+  FOR_EVERY_GURDIAN: 'for-every-guardian',
+  FOR_EVERY_FRACTION: 'for-every-fraction',
 } as const;
 
 export const CONVERT_ACTION_CONDITION = {

@@ -14,7 +14,7 @@
           "gold": 1
         },
         {
-          "conditions": ["choice", "for_every_defender"],
+          "conditions": ["choice", "for-every-defender"],
           "isOptional": false,
           "heal": 1
         }
@@ -35,7 +35,7 @@
           "takeCard": 1
         },
         {
-          "conditions": ["fraction", "for_every_defender"],
+          "conditions": ["fraction", "for-every-defender"],
           "isOptional": false,
           "heal": 2
         }
@@ -100,6 +100,157 @@
           "conditions": ["fraction"],
           "isOptional": false,
           "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Гинтоки",
+      "image": "Gintoki.png",
+      "fraction": "Гинтама",
+      "price": 7,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 6,
+          "heal": 6
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "prepareHero": 1
+        }
+      ]
+    },
+    {
+      "name": "Широяша",
+      "image": "Shiroyasha.png",
+      "fraction": "Гинтама",
+      "price": 3,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 5
+        },
+        {
+          "conditions": ["for-every-defender"],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "heal": 6
+        }
+      ]
+    },
+    {
+      "name": "Итачи",
+      "image": "Itachi.png",
+      "fraction": "Наруто",
+      "price": 6,
+      "protection": 5,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        },
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": false,
+          "damage": 2
+        }
+      ]
+    },
+    {
+      "name": "Ёродзуя",
+      "image": "Erozuya.png",
+      "fraction": "Гинтама",
+      "price": 5,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2,
+          "damage": 3,
+          "heal": 4,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Такасуги",
+      "image": "Takasugi.png",
+      "fraction": "Гинтама",
+      "price": 3,
+      "protection": 4,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": ["for-every-guardian"],
+          "isOptional": false,
+          "damage": 2
+        }
+      ]
+    },
+    {
+      "name": "Кацура",
+      "image": "Katsura.png",
+      "fraction": "Гинтама",
+      "price": 4,
+      "protection": 4,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 3
+        },
+        {
+          "conditions": ["for-every-defender"],
+          "isOptional": false,
+          "damage": 1
+        }
+      ]
+    },
+    {
+      "name": "Гинтама",
+      "image": "Gintama.png",
+      "fraction": "Гинтама",
+      "price": 2,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2,
+          "heal": 3
+        },
+        {
+          "conditions": ["for-every-defender"],
+          "isOptional": false,
+          "gold": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "gold": 1
         }
       ]
     }

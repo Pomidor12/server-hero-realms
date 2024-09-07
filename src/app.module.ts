@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
+import { HeroRealmsModule } from './hero-realms/hero-realms.module';
 
 @Module({
-  imports: [DatabaseModule.forRoot()],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [HeroRealmsModule, DatabaseModule.forRoot()],
 })
 export class AppModule {}

@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 
 import { DatabaseService } from './database.service';
 
-
 @Module({})
 export class DatabaseModule {
   public static async forRoot(): Promise<DynamicModule> {

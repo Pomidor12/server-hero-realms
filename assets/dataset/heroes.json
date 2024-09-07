@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "name": "Цукуё",
+      "image": "Tsukuyo.png",
+      "fraction": "Гинтама",
+      "price": 2,
+      "protection": 3,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": ["choice"],
+          "isOptional": false,
+          "gold": 1
+        },
+        {
+          "conditions": ["choice", "for_every_defender"],
+          "isOptional": false,
+          "heal": 1
+        }
+      ]
+    },
+    {
+      "name": "Кагура",
+      "image": "Kagura.png",
+      "fraction": "Гинтама",
+      "price": 6,
+      "protection": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "heal": 2,
+          "takeCard": 1
+        },
+        {
+          "conditions": ["fraction", "for_every_defender"],
+          "isOptional": false,
+          "heal": 2
+        }
+      ]
+    },
+    {
+      "name": "Садахару",
+      "image": "Sadaharu.png",
+      "fraction": "Гинтама",
+      "price": 8,
+      "protection": 6,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 5,
+          "takeCard": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "heal": 6
+        }
+      ]
+    },
+    {
+      "name": "Гедомару",
+      "image": "Gedomaru.png",
+      "fraction": "Гинтама",
+      "price": 4,
+      "protection": 5,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": ["choice"],
+          "isOptional": false,
+          "damage": 3
+        },
+        {
+          "conditions": ["choice"],
+          "isOptional": false,
+          "heal": 4
+        }
+      ]
+    },
+    {
+      "name": "Хиджиката",
+      "image": "Hijikata.png",
+      "fraction": "Гинтама",
+      "price": 5,
+      "protection": 5,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2,
+          "heal": 3
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    }
+  ]
+}

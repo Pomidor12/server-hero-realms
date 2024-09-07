@@ -30,25 +30,26 @@ enum HeroPlacement {
 }
 
 model Hero {
-  id            Int           @id @default(autoincrement())
-  playerId      Int?          @map("player_id")
-  Player        Player?       @relation(fields: [playerId], references: [id])
-  battlefieldId Int?          @map("battlefield_id")
-  Battlefield   Battlefield?  @relation(fields: [battlefieldId], references: [id])
-  name          String        @unique @db.VarChar(255)
-  image         String        @db.VarChar(255)
-  fraction      String        @db.VarChar(255)
-  price         Int           @db.Integer()
-  protection    Int           @db.Integer()
-  isGuardian    Boolean       @db.Boolean()
-  placement     HeroPlacement
+  id            Int            @id @default(autoincrement())
+  playerId      Int?           @map("player_id")
+  Player        Player?        @relation(fields: [playerId], references: [id])
+  battlefieldId Int?           @map("battlefield_id")
+  battlefield   Battlefield?   @relation(fields: [battlefieldId], references: [id])
+  name          String         @unique @db.VarChar(255)
+  image         String         @db.VarChar(255)
+  fraction      String         @db.VarChar(255)
+  price         Int            @db.Integer()
+  protection    Int?           @db.Integer()
+  isGuardian    Boolean        @default(false) @db.Boolean()
+  placement     HeroPlacement?
   actions       Action[]
 
   @@map("hero")
 }
 
 model Action {
-  heroId                   Int               @id @default(autoincrement()) @map("hero_id")
+  id                       Int               @id @default(autoincrement())
+  heroId                   Int               @map("hero_id")
   hero                     Hero              @relation(fields: [heroId], references: [id], onDelete: Cascade)
   conditions               ActionCondition[] @default([])
   isOptional               Boolean           @map("is_optional") @db.Boolean()
@@ -70,8 +71,8 @@ model Action {
 model Player {
   id                Int          @id @default(autoincrement())
   battlefieldId     Int?         @map("battlefield_id")
-  Battlefield       Battlefield? @relation(fields: [battlefieldId], references: [id])
-  name              String       @db.VarChar(255)
+  battlefield       Battlefield? @relation(fields: [battlefieldId], references: [id])
+  name              String       @unique() @db.VarChar(255)
   image             String       @db.VarChar(255)
   health            Int          @db.Integer()
   currentTurnPlayer Boolean      @default(false) @map("current_turn_player")
@@ -83,7 +84,8 @@ model Player {
 
 model Battlefield {
   id      Int      @id @default(autoincrement())
-  round   Int      @db.Integer()
+  name    String   @db.VarChar(255)
+  round   Int      @default(1) @db.Integer()
   players Player[]
   heroes  Hero[]
 

@@ -1,0 +1,29 @@
+import { ActionCondition } from '@prisma/client';
+
+export const ACTION_CONDITION = {
+  SACRIFICE: 'sacrifice',
+  FRACTION: 'fraction',
+  CHOICE: 'choice',
+  FOR_EVERY_DEFENDER: 'for_every_defender',
+  FOR_EVERY_GURDIAN: 'for_every_guardian',
+  FOR_EVERY_FRACTION: 'for_every_fraction',
+} as const;
+
+export const CONVERT_ACTION_CONDITION = {
+  TO_DB: {
+    [ACTION_CONDITION.SACRIFICE]: ActionCondition.SACRIFICE,
+    [ACTION_CONDITION.FRACTION]: ActionCondition.FRACTION,
+    [ACTION_CONDITION.CHOICE]: ActionCondition.CHOICE,
+    [ACTION_CONDITION.FOR_EVERY_DEFENDER]: ActionCondition.FOR_EVERY_DEFENDER,
+    [ACTION_CONDITION.FOR_EVERY_GURDIAN]: ActionCondition.FOR_EVERY_GURDIAN,
+    [ACTION_CONDITION.FOR_EVERY_FRACTION]: ActionCondition.FOR_EVERY_FRACTION,
+  },
+  FROM_DB: {
+    [ActionCondition.SACRIFICE]: ACTION_CONDITION.SACRIFICE,
+    [ActionCondition.FRACTION]: ACTION_CONDITION.FRACTION,
+    [ActionCondition.CHOICE]: ACTION_CONDITION.CHOICE,
+    [ActionCondition.FOR_EVERY_DEFENDER]: ACTION_CONDITION.FOR_EVERY_DEFENDER,
+    [ActionCondition.FOR_EVERY_GURDIAN]: ACTION_CONDITION.FOR_EVERY_GURDIAN,
+    [ActionCondition.FOR_EVERY_FRACTION]: ACTION_CONDITION.FOR_EVERY_FRACTION,
+  },
+};

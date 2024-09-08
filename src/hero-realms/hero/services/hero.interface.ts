@@ -4,10 +4,16 @@ export type Dataset = {
   heroes: HeroStats[];
 };
 
-type HeroStats = Omit<
+export type HeroStats = Omit<
   Hero,
   'id' | 'playerId' | 'battlefieldId' | 'placement' | 'protection'
-> & { actions: OptionalHeroAction[]; protection?: number };
+> & {
+  actions: OptionalHeroAction[];
+  protection?: number;
+  battlefieldId?: number;
+  playerId?: number;
+  placement?: HeroPlacement;
+};
 
 type OptionalHeroAction = Partial<
   Omit<Action, 'heroId' | 'conditions' | 'isOptional'>
@@ -20,6 +26,16 @@ export type ActionCondition =
   | 'sacrifice'
   | 'fraction'
   | 'choice'
-  | 'for_every_defender'
-  | 'for_every_guardian'
-  | 'for_every_fraction';
+  | 'for-every-defender'
+  | 'for-every-guardian'
+  | 'for-every-fraction';
+
+export type HeroPlacement =
+  | 'active-deck'
+  | 'selection-deck'
+  | 'reset-deck'
+  | 'sacrificial-deck'
+  | 'trading-deck'
+  | 'trading-row';
+
+export type HeroRaw = Hero & { actions: Action[] };

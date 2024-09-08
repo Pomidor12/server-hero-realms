@@ -5,11 +5,11 @@ import { BattlefieldController } from './battlefield/controllers/battlefield.con
 import { HeroController } from './hero/controllers/hero.controller';
 import { PlayerService } from './player/services/player.service';
 import { BattlefieldService } from './battlefield/services/battlefield.service';
-import { HeoService } from './hero/services/hero.service';
+import { HeroService } from './hero/services/hero.service';
 
 @Module({
   imports: [],
   controllers: [PlayerController, BattlefieldController, HeroController],
-  providers: [PlayerService, BattlefieldService, HeoService],
+  providers: [PlayerService, BattlefieldService, HeroService],
 })
 export class HeroRealmsModule {}

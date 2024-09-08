@@ -5,11 +5,13 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 
 import { BattlefieldService } from '../services/battlefield.service';
 
 import { CreateBattlefieldDto } from './dtos/create-battlefield.dto';
+import { UpdateBattlefieldDto } from './dtos/update-battlefield.dto';
 
 @Controller({ path: 'battlefield', version: '1' })
 export class BattlefieldController {
@@ -20,13 +22,24 @@ export class BattlefieldController {
     return this.battlefield.createBattleField(dto);
   }
 
-  @Get()
+  @Get('/all-battlefields')
+  public getBattlefields() {
+    console.log('2');
+    return this.battlefield.getBattleFileds();
+  }
+
+  @Get(':id')
   public getBattlefield(@Param('id', ParseIntPipe) id: number) {
     return this.battlefield.getBattleFiled(id);
   }
 
-  @Get('all-battlefields')
-  public getBattlefields() {
-    return this.battlefield.getBattleFileds();
+  @Put()
+  public updateBattleFiled(@Body() dto: UpdateBattlefieldDto) {
+    return this.battlefield.updateBattleFiled(dto);
+  }
+
+  @Get('prepare-battlefield/:id')
+  public prepareBattlefield(@Param('id', ParseIntPipe) id: number) {
+    return this.battlefield.prepareBattlefield(id);
   }
 }

@@ -253,6 +253,49 @@
           "gold": 1
         }
       ]
+    },
+    {
+      "name": "Камуи",
+      "image": "Kamui.png",
+      "fraction": "Гинтама",
+      "price": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "takeCard": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "heal": 5
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": true,
+          "damage": 5
+        }
+      ]
+    },
+    {
+      "name": "Вкусняшки Гина",
+      "image": "Gin's Goodies.png",
+      "fraction": "Гинтама",
+      "price": 1,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "heal": 6
+        }
+      ]
     }
   ]
 }

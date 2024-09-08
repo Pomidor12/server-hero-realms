@@ -35,7 +35,7 @@ model Hero {
   Player        Player?        @relation(fields: [playerId], references: [id])
   battlefieldId Int?           @map("battlefield_id")
   battlefield   Battlefield?   @relation(fields: [battlefieldId], references: [id])
-  name          String         @unique @db.VarChar(255)
+  name          String         @db.VarChar(255)
   image         String         @db.VarChar(255)
   fraction      String         @db.VarChar(255)
   price         Int            @db.Integer()
@@ -44,6 +44,7 @@ model Hero {
   placement     HeroPlacement?
   actions       Action[]
 
+  @@unique(fields: [id, name, playerId, battlefieldId], map: "hero_unique_keys", name: "uniqueKeys")
   @@map("hero")
 }
 
@@ -84,7 +85,7 @@ model Player {
 
 model Battlefield {
   id      Int      @id @default(autoincrement())
-  name    String   @db.VarChar(255)
+  name    String   @unique() @db.VarChar(255)
   round   Int      @default(1) @db.Integer()
   players Player[]
   heroes  Hero[]

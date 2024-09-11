@@ -1,19 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
+import { Socket } from 'socket.io';
 
 import type { CreateBattlefieldDto } from '../controllers/dtos/create-battlefield.dto';
 import { UpdateBattlefieldDto } from '../controllers/dtos/update-battlefield.dto';
 import { HeroService } from 'src/hero-realms/hero/services/hero.service';
 import { getRandomNumbers } from '../utils/math';
 import { HERO_PLACEMENT } from 'src/hero-realms/hero/enums/hero-placement.enum';
+import {
+  CLIENT_MESSAGES,
+  MIN_BATTLEFIELD_PLAYERS_COUNT,
+  TRADING_ROW_CARDS_COUNT,
+} from '../battlefield.constant';
 
 @Injectable()
 export class BattlefieldService {
+  private conections = new Map<string, Socket>();
+
   constructor(
     private readonly db: PrismaClient,
     private readonly hero: HeroService,
   ) {}
+
+  public handleConnect(client: Socket) {
+    this.conections.set(client.id, client);
+  }
+
+  public handleDisconnect(client: Socket) {
+    this.conections.delete(client.id);
+  }
+
+  public notifyAllSubsribers(event: string, data: any) {
+    for (const conection of this.conections.values()) {
+      conection.emit(event, data);
+    }
+  }
 
   public async createBattleField(dto: CreateBattlefieldDto) {
     const battlefield = await this.db.battlefield.create({
@@ -91,6 +113,11 @@ export class BattlefieldService {
       where: { id },
       include: { players: true, heroes: { include: { actions: true } } },
     });
+    console.log(battlefield.players.length);
+
+    if (battlefield.players.length < MIN_BATTLEFIELD_PLAYERS_COUNT) {
+      return;
+    }
 
     if (!battlefield.heroes.length) {
       const heroes = await this.hero.getHeroes();
@@ -98,7 +125,7 @@ export class BattlefieldService {
       const indexCardsForTraidingRow = getRandomNumbers(
         0,
         heroes.length - 1,
-        6,
+        TRADING_ROW_CARDS_COUNT,
       );
 
       for (const [index, hero] of heroes.entries()) {
@@ -119,6 +146,9 @@ export class BattlefieldService {
       heroes: battlefield.heroes.map((hero) => this.hero.normalizeHero(hero)),
     };
 
-    return normalizedBattlefield;
+    this.notifyAllSubsribers(
+      CLIENT_MESSAGES.BATTLEFIELD_IS_READY,
+      normalizedBattlefield,
+    );
   }
 }

@@ -6,13 +6,15 @@ import { Socket } from 'socket.io';
 import type { CreateBattlefieldDto } from '../controllers/dtos/create-battlefield.dto';
 import { UpdateBattlefieldDto } from '../controllers/dtos/update-battlefield.dto';
 import { HeroService } from 'src/hero-realms/hero/services/hero.service';
-import { getRandomNumbers } from '../utils/math';
+import { getRandomNumber, getRandomNumbers } from '../utils/math';
 import { HERO_PLACEMENT } from 'src/hero-realms/hero/enums/hero-placement.enum';
 import {
+  BASE_HEROES,
   CLIENT_MESSAGES,
   MIN_BATTLEFIELD_PLAYERS_COUNT,
   TRADING_ROW_CARDS_COUNT,
 } from '../battlefield.constant';
+import { RawBattlefield } from './battlefield.interface';
 
 @Injectable()
 export class BattlefieldService {
@@ -52,10 +54,13 @@ export class BattlefieldService {
       where: {
         id,
       },
-      include: { heroes: true, players: true },
+      include: {
+        heroes: { include: { actions: true } },
+        players: { include: { heroes: { include: { actions: true } } } },
+      },
     });
 
-    return battlefield;
+    return this.normalizedBattlefield(battlefield);
   }
 
   public async getBattleFileds() {
@@ -109,46 +114,114 @@ export class BattlefieldService {
   }
 
   public async prepareBattlefield(id: number) {
-    const battlefield = await this.db.battlefield.findUnique({
+    let battlefield = await this.db.battlefield.findUnique({
       where: { id },
-      include: { players: true, heroes: { include: { actions: true } } },
+      include: {
+        players: { include: { heroes: { include: { actions: true } } } },
+        heroes: { include: { actions: true } },
+      },
     });
-    console.log(battlefield.players.length);
 
     if (battlefield.players.length < MIN_BATTLEFIELD_PLAYERS_COUNT) {
       return;
     }
 
+    const heroes = await this.hero.getHeroes();
+
     if (!battlefield.heroes.length) {
-      const heroes = await this.hero.getHeroes();
+      const heroesForTrade = heroes.filter((hero) => hero.price);
 
       const indexCardsForTraidingRow = getRandomNumbers(
         0,
-        heroes.length - 1,
+        heroesForTrade.length - 1,
         TRADING_ROW_CARDS_COUNT,
       );
 
-      for (const [index, hero] of heroes.entries()) {
+      for (const [index, hero] of heroesForTrade.entries()) {
         const omittedHero = omit(hero, 'id');
-        const res = await this.hero.createHero({
+        await this.hero.createHero({
           ...omittedHero,
           battlefieldId: id,
           placement: indexCardsForTraidingRow.includes(index)
             ? HERO_PLACEMENT.TRADING_ROW
             : HERO_PLACEMENT.TRADING_DECK,
         });
-        console.log(res);
       }
     }
 
-    const normalizedBattlefield = {
-      ...battlefield,
-      heroes: battlefield.heroes.map((hero) => this.hero.normalizeHero(hero)),
-    };
+    if (battlefield.round === 1) {
+      const filteredPlayers = battlefield.players.filter(
+        (player) => !player.heroes.length,
+      );
+
+      if (filteredPlayers.length) {
+        const randomPlayerIndex = getRandomNumber(0, 1);
+        const playerToChangeTurnOrder = battlefield.players[randomPlayerIndex];
+        await this.db.player.update({
+          data: { currentTurnPlayer: true },
+          where: { id: playerToChangeTurnOrder.id },
+        });
+
+        const baseHeroes = heroes.filter((hero) =>
+          BASE_HEROES.includes(hero.name),
+        );
+        const cardForDuplicate = baseHeroes.find((hero) => hero.name === 'Ято');
+        const duplicates = new Array(4).fill(cardForDuplicate);
+        baseHeroes.push(...duplicates);
+
+        for (const player of filteredPlayers) {
+          const initialCountCards =
+            playerToChangeTurnOrder.id === player.id ? 3 : 5;
+
+          const indexCardsForActiveDeck = getRandomNumbers(
+            0,
+            baseHeroes.length - 1,
+            initialCountCards,
+          );
+
+          for (const [index, hero] of baseHeroes.entries()) {
+            const omittedHero = omit(hero, 'id');
+
+            await this.hero.createHero({
+              ...omittedHero,
+              battlefieldId: id,
+              playerId: player.id,
+              placement: indexCardsForActiveDeck.includes(index)
+                ? HERO_PLACEMENT.ACTIVE_DECK
+                : HERO_PLACEMENT.SELECTION_DECK,
+            });
+          }
+        }
+      }
+    }
+
+    if (!battlefield.heroes.length) {
+      battlefield = await this.db.battlefield.findUnique({
+        where: { id },
+        include: {
+          players: { include: { heroes: { include: { actions: true } } } },
+          heroes: { include: { actions: true } },
+        },
+      });
+    }
 
     this.notifyAllSubsribers(
       CLIENT_MESSAGES.BATTLEFIELD_IS_READY,
-      normalizedBattlefield,
+      this.normalizedBattlefield(battlefield),
     );
+  }
+
+  private normalizedBattlefield(battlefield: RawBattlefield) {
+    const normalizedBattlefield = {
+      ...battlefield,
+      heroes:
+        battlefield.heroes?.map((hero) => this.hero.normalizeHero(hero)) ?? [],
+      players: battlefield.players?.map((player) => ({
+        ...player,
+        heroes: player.heroes.map((hero) => this.hero.normalizeHero(hero)),
+      })),
+    };
+
+    return normalizedBattlefield;
   }
 }

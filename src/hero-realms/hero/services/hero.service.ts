@@ -47,6 +47,7 @@ export class HeroService {
           },
         },
       },
+      include: { actions: true },
     });
 
     return createdHero;
@@ -58,7 +59,6 @@ export class HeroService {
       const { heroes } = JSON.parse(data) as Dataset;
 
       for (const hero of heroes) {
-        console.log(hero);
         const isExist = await this.db.hero.findFirst({
           where: { name: hero.name },
         });

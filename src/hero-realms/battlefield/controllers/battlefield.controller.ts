@@ -24,7 +24,6 @@ export class BattlefieldController {
 
   @Get('/all-battlefields')
   public getBattlefields() {
-    console.log('2');
     return this.battlefield.getBattleFileds();
   }
 
@@ -36,10 +35,5 @@ export class BattlefieldController {
   @Put()
   public updateBattleFiled(@Body() dto: UpdateBattlefieldDto) {
     return this.battlefield.updateBattleFiled(dto);
-  }
-
-  @Get('prepare-battlefield/:id')
-  public prepareBattlefield(@Param('id', ParseIntPipe) id: number) {
-    return this.battlefield.prepareBattlefield(id);
   }
 }

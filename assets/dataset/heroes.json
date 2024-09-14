@@ -114,7 +114,8 @@
           "conditions": [],
           "isOptional": false,
           "damage": 6,
-          "heal": 6
+          "heal": 6,
+          "takeCard": 1
         },
         {
           "conditions": ["fraction"],
@@ -294,6 +295,188 @@
           "conditions": ["fraction"],
           "isOptional": false,
           "heal": 6
+        }
+      ]
+    },
+    {
+      "name": "Мадара",
+      "image": "Madara.png",
+      "fraction": "Наруто",
+      "price": 8,
+      "protection": 6,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 4
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Тобирама",
+      "image": "Tobirama.png",
+      "fraction": "Наруто",
+      "price": 5,
+      "protection": 3,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "putToDeckResetedCard": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Саске",
+      "image": "Sasuke.png",
+      "fraction": "Наруто",
+      "price": 3,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 4
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "damage": 3
+        }
+      ]
+    },
+    {
+      "name": "Какаши",
+      "image": "Kakashi.png",
+      "fraction": "Наруто",
+      "price": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 8
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Гай",
+      "image": "Guy.png",
+      "fraction": "Наруто",
+      "price": 7,
+      "protection": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 3
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": true,
+          "damage": 3
+        }
+      ]
+    },
+    {
+      "name": "Гон",
+      "image": "Gon.png",
+      "fraction": "HunterxHunter",
+      "price": 7,
+      "protection": 7,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 4,
+          "resetOpponentsCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Морау",
+      "image": "Moral.png",
+      "fraction": "HunterxHunter",
+      "price": 2,
+      "protection": 4,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": ["for-every-fraction"],
+          "isOptional": false,
+          "damage": 1
+        }
+      ]
+    },
+    {
+      "name": "Ято",
+      "image": "Yato.png",
+      "fraction": "",
+      "price": 0,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 1
+        }
+      ]
+    },
+    {
+      "name": "Ехидна",
+      "image": "Echidna.png",
+      "fraction": "",
+      "price": 0,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2
         }
       ]
     }

@@ -13,6 +13,6 @@ export class HeroController {
 
   @Get('apply-dataset')
   public applyDataset() {
-    this.hero.applyDataset();
+    return this.hero.applyDataset();
   }
 }

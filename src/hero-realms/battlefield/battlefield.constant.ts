@@ -3,7 +3,7 @@ export const TRADING_ROW_CARDS_COUNT = 6;
 
 export const CLIENT_MESSAGES = {
   PREPARE_BATTLEFIELD: 'client:prepare-battlefiled',
-  BATTLEFIELD_IS_READY: 'client:battlefiled-is-ready',
+  BATTLEFIELD_UPDATED: 'client:battlefiled-updated',
 };
 
 export const TRANSPORTS = ['websocket'];

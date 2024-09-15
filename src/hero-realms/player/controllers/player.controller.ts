@@ -1,5 +1,12 @@
-import { Body, Controller, Get, Injectable, Post, Put } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 
 import type { CreatePlayerDto } from './dtos/create-Player.dto';
 import { PlayerService } from '../services/player.service';
@@ -22,5 +29,10 @@ export class PlayerController {
   @Put()
   public updatePlayer(@Body() dto: UpdatePlayerDto) {
     return this.player.updatePlayer(dto);
+  }
+
+  @Put('end-move/:id')
+  public endPlayerMove(@Param('id', ParseIntPipe) id: number) {
+    return this.player.endPlayerMove(id);
   }
 }

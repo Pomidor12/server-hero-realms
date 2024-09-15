@@ -25,6 +25,7 @@ enum HeroPlacement {
   SACRIFICIAL_DECK @map("sacrificial_deck")
   TRADING_DECK     @map("trading_deck")
   TRADING_ROW      @map("trading_row")
+  DEFENDERS_ROW    @map("defenders_row")
 
   @@map("hero_placement")
 }
@@ -40,7 +41,7 @@ model Hero {
   fraction      String         @db.VarChar(255)
   price         Int            @db.Integer()
   protection    Int?           @db.Integer()
-  isGuardian    Boolean        @default(false) @db.Boolean()
+  isGuardian    Boolean        @default(false) @map("is_guarfian") @db.Boolean()
   placement     HeroPlacement?
   actions       Action[]
 
@@ -54,6 +55,7 @@ model Action {
   hero                     Hero              @relation(fields: [heroId], references: [id], onDelete: Cascade)
   conditions               ActionCondition[] @default([])
   isOptional               Boolean           @map("is_optional") @db.Boolean()
+  isUsed                   Boolean           @default(false) @map("is_used") @db.Boolean()
   damage                   Int               @db.Integer()
   heal                     Int               @db.Integer()
   gold                     Int               @db.Integer()
@@ -77,7 +79,8 @@ model Player {
   image             String       @db.VarChar(255)
   health            Int          @db.Integer()
   currentTurnPlayer Boolean      @default(false) @map("current_turn_player")
-  turnOrder         Int          @db.Integer()
+  turnOrder         Int          @map("turn_order") @db.Integer()
+  currentGoldCount  Int          @default(0) @map("current_gold_count") @db.Integer()
   heroes            Hero[]
 
   @@map("player")

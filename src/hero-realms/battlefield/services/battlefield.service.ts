@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Action, HeroPlacement, PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
 import { Socket } from 'socket.io';
 
 import type { CreateBattlefieldDto } from '../controllers/dtos/create-battlefield.dto';
 import { UpdateBattlefieldDto } from '../controllers/dtos/update-battlefield.dto';
 import { HeroService } from 'src/hero-realms/hero/services/hero.service';
-import { getRandomNumber, getRandomNumbers } from '../utils/math';
+import { getRandomNumber, getRandomNumbers } from '../../utils/math';
 import { HERO_PLACEMENT } from 'src/hero-realms/hero/enums/hero-placement.enum';
 import {
   BASE_HEROES,
@@ -114,13 +114,7 @@ export class BattlefieldService {
   }
 
   public async prepareBattlefield(id: number) {
-    let battlefield = await this.db.battlefield.findUnique({
-      where: { id },
-      include: {
-        players: { include: { heroes: { include: { actions: true } } } },
-        heroes: { include: { actions: true } },
-      },
-    });
+    let battlefield = await this.getBattleFiled(id);
 
     if (battlefield.players.length < MIN_BATTLEFIELD_PLAYERS_COUNT) {
       return;
@@ -149,66 +143,73 @@ export class BattlefieldService {
       }
     }
 
-    if (battlefield.round === 1) {
-      const filteredPlayers = battlefield.players.filter(
-        (player) => !player.heroes.length,
+    const filteredPlayers = battlefield.players.filter(
+      (player) => !player.heroes.length,
+    );
+
+    if (filteredPlayers.length) {
+      const randomPlayerIndex = getRandomNumber(1, 2) - 1;
+      const playerToChangeTurnOrder = battlefield.players[randomPlayerIndex];
+
+      await this.db.player.update({
+        data: { currentTurnPlayer: true },
+        where: { id: playerToChangeTurnOrder.id },
+      });
+
+      const baseHeroes = heroes.filter((hero) =>
+        BASE_HEROES.includes(hero.name),
       );
+      const cardForDuplicate = baseHeroes.find((hero) => hero.name === 'Ято');
+      const duplicates = new Array(4).fill(cardForDuplicate);
+      baseHeroes.push(...duplicates);
 
-      if (filteredPlayers.length) {
-        const randomPlayerIndex = getRandomNumber(0, 1);
-        const playerToChangeTurnOrder = battlefield.players[randomPlayerIndex];
-        await this.db.player.update({
-          data: { currentTurnPlayer: true },
-          where: { id: playerToChangeTurnOrder.id },
-        });
+      for (const player of filteredPlayers) {
+        const createdActiveHeroesActions: Action[] = [];
+        const initialCountCards =
+          playerToChangeTurnOrder.id === player.id ? 3 : 5;
 
-        const baseHeroes = heroes.filter((hero) =>
-          BASE_HEROES.includes(hero.name),
+        const indexCardsForActiveDeck = getRandomNumbers(
+          0,
+          baseHeroes.length - 1,
+          initialCountCards,
         );
-        const cardForDuplicate = baseHeroes.find((hero) => hero.name === 'Ято');
-        const duplicates = new Array(4).fill(cardForDuplicate);
-        baseHeroes.push(...duplicates);
 
-        for (const player of filteredPlayers) {
-          const initialCountCards =
-            playerToChangeTurnOrder.id === player.id ? 3 : 5;
+        for (const [index, hero] of baseHeroes.entries()) {
+          const omittedHero = omit(hero, 'id');
+          const isActiveHero = indexCardsForActiveDeck.includes(index);
 
-          const indexCardsForActiveDeck = getRandomNumbers(
-            0,
-            baseHeroes.length - 1,
-            initialCountCards,
-          );
-
-          for (const [index, hero] of baseHeroes.entries()) {
-            const omittedHero = omit(hero, 'id');
-
-            await this.hero.createHero({
-              ...omittedHero,
-              battlefieldId: id,
-              playerId: player.id,
-              placement: indexCardsForActiveDeck.includes(index)
-                ? HERO_PLACEMENT.ACTIVE_DECK
-                : HERO_PLACEMENT.SELECTION_DECK,
-            });
+          const newHero = await this.hero.createHero({
+            ...omittedHero,
+            battlefieldId: id,
+            playerId: player.id,
+            placement: isActiveHero
+              ? HERO_PLACEMENT.ACTIVE_DECK
+              : HERO_PLACEMENT.SELECTION_DECK,
+          });
+          if (isActiveHero) {
+            createdActiveHeroesActions.push(...newHero.actions);
           }
         }
       }
     }
 
     if (!battlefield.heroes.length) {
-      battlefield = await this.db.battlefield.findUnique({
-        where: { id },
-        include: {
-          players: { include: { heroes: { include: { actions: true } } } },
-          heroes: { include: { actions: true } },
-        },
-      });
+      battlefield = await this.getBattleFiled(id);
     }
 
-    this.notifyAllSubsribers(
-      CLIENT_MESSAGES.BATTLEFIELD_IS_READY,
-      this.normalizedBattlefield(battlefield),
-    );
+    this.notifyAllSubsribers(CLIENT_MESSAGES.BATTLEFIELD_UPDATED, battlefield);
+  }
+
+  public async getBattlefieldAndNotifyAllSubs(event: string, id: number) {
+    const battlefield = await this.db.battlefield.findUnique({
+      where: { id },
+      include: {
+        players: { include: { heroes: { include: { actions: true } } } },
+        heroes: { include: { actions: true } },
+      },
+    });
+
+    this.notifyAllSubsribers(event, this.normalizedBattlefield(battlefield));
   }
 
   private normalizedBattlefield(battlefield: RawBattlefield) {

@@ -7,6 +7,7 @@ export const HERO_PLACEMENT = {
   SACRIFICIAL_DECK: 'sacrificial-deck',
   TRADING_DECK: 'trading-deck',
   TRADING_ROW: 'trading-row',
+  DEFENDERS_ROW: 'defenders-row',
 } as const;
 
 export const CONVERT_HERO_PLACEMENT = {
@@ -17,6 +18,7 @@ export const CONVERT_HERO_PLACEMENT = {
     [HERO_PLACEMENT.SACRIFICIAL_DECK]: HeroPlacement.SACRIFICIAL_DECK,
     [HERO_PLACEMENT.TRADING_DECK]: HeroPlacement.TRADING_DECK,
     [HERO_PLACEMENT.TRADING_ROW]: HeroPlacement.TRADING_ROW,
+    [HERO_PLACEMENT.DEFENDERS_ROW]: HeroPlacement.DEFENDERS_ROW,
   } as const,
   FROM_BD: {
     [HeroPlacement.ACTIVE_DECK]: HERO_PLACEMENT.ACTIVE_DECK,
@@ -25,5 +27,6 @@ export const CONVERT_HERO_PLACEMENT = {
     [HeroPlacement.SACRIFICIAL_DECK]: HERO_PLACEMENT.SACRIFICIAL_DECK,
     [HeroPlacement.TRADING_DECK]: HERO_PLACEMENT.TRADING_DECK,
     [HeroPlacement.TRADING_ROW]: HERO_PLACEMENT.TRADING_ROW,
+    [HeroPlacement.DEFENDERS_ROW]: HERO_PLACEMENT.DEFENDERS_ROW,
   } as const,
 };

@@ -1,6 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Put } from '@nestjs/common';
 
 import { HeroService } from '../services/hero.service';
+
+import { HireHeroDto } from './dtos/hire-hero.dto';
+import { UseHeroActionsDto } from './dtos/use-hero-actions.dto';
 
 @Controller({ path: 'hero', version: '1' })
 export class HeroController {
@@ -11,8 +14,19 @@ export class HeroController {
     return this.hero.getHeroes();
   }
 
+  @Put('hire')
+  public hireHero(@Body() dto: HireHeroDto) {
+    return this.hero.hireHero(dto);
+  }
+
+  @Put('use-actions')
+  public useHeroActions(@Body() dto: UseHeroActionsDto) {
+    return this.hero.useHeroActions(dto);
+  }
+
   @Get('apply-dataset')
   public applyDataset() {
-    return this.hero.applyDataset();
+    this.hero.applyDataset();
+    return 'success';
   }
 }

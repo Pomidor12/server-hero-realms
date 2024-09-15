@@ -1,5 +1,4 @@
 import type { Battlefield, Player } from '@prisma/client';
-
 import type { HeroRaw } from 'src/hero-realms/hero/services/hero.interface';
 
 export type PrepareBattlefieldDto = {

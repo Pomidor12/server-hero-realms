@@ -36,6 +36,12 @@ export type HeroPlacement =
   | 'reset-deck'
   | 'sacrificial-deck'
   | 'trading-deck'
-  | 'trading-row';
+  | 'trading-row'
+  | 'defenders-row';
 
 export type HeroRaw = Hero & { actions: Action[] };
+
+export type ActionWithoutAdditionalInfo = Omit<
+  Action,
+  'id' | 'playerId' | 'heroId' | 'conditions' | 'isOptional' | 'isUsed'
+>;

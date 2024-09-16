@@ -72,16 +72,17 @@ model Action {
 }
 
 model Player {
-  id                Int          @id @default(autoincrement())
-  battlefieldId     Int?         @map("battlefield_id")
-  battlefield       Battlefield? @relation(fields: [battlefieldId], references: [id])
-  name              String       @unique() @db.VarChar(255)
-  image             String       @db.VarChar(255)
-  health            Int          @db.Integer()
-  currentTurnPlayer Boolean      @default(false) @map("current_turn_player")
-  turnOrder         Int          @map("turn_order") @db.Integer()
-  currentGoldCount  Int          @default(0) @map("current_gold_count") @db.Integer()
-  heroes            Hero[]
+  id                 Int          @id @default(autoincrement())
+  battlefieldId      Int?         @map("battlefield_id")
+  battlefield        Battlefield? @relation(fields: [battlefieldId], references: [id])
+  name               String       @unique() @db.VarChar(255)
+  image              String       @db.VarChar(255)
+  health             Int          @db.Integer()
+  currentTurnPlayer  Boolean      @default(false) @map("current_turn_player")
+  turnOrder          Int          @map("turn_order") @db.Integer()
+  currentGoldCount   Int          @default(0) @map("current_gold_count") @db.Integer()
+  currentDamageCount Int          @default(0) @map("current_damage_count") @db.Integer()
+  heroes             Hero[]
 
   @@map("player")
 }

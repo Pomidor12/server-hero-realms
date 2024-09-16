@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { HeroPlacement, PrismaClient } from '@prisma/client';
 
-import type { CreatePlayerDto } from '../controllers/dtos/create-Player.dto';
-import { UpdatePlayerDto } from '../controllers/dtos/update-player.dto';
 import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlefield.service';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumbers } from 'src/hero-realms/utils/math';
+
+import type { CreatePlayerDto } from '../controllers/dtos/create-Player.dto';
+import type { UpdatePlayerDto } from '../controllers/dtos/update-player.dto';
+import type { AttackPlayerDto } from '../controllers/dtos/attack-player.dto';
 
 @Injectable()
 export class PlayerService {
@@ -45,12 +47,21 @@ export class PlayerService {
     return updatedPlayer;
   }
 
+  public async getPlayers() {
+    const players = await this.db.player.findMany({
+      include: { heroes: true },
+    });
+
+    return players;
+  }
+
   public async endPlayerMove(id: number) {
     const updatedPlayer = await this.db.player.update({
       where: { id },
       data: {
         currentTurnPlayer: false,
         currentGoldCount: 0,
+        currentDamageCount: 0,
       },
       include: {
         battlefield: { include: { players: true } },
@@ -59,10 +70,7 @@ export class PlayerService {
     });
 
     for (const hero of updatedPlayer.heroes) {
-      if (
-        hero.placement === HeroPlacement.ACTIVE_DECK ||
-        hero.placement === HeroPlacement.DEFENDERS_ROW
-      ) {
+      if (hero.placement === HeroPlacement.ACTIVE_DECK) {
         await this.db.hero.update({
           where: { id: hero.id },
           data: { placement: HeroPlacement.RESET_DECK },
@@ -148,11 +156,81 @@ export class PlayerService {
     return updatedPlayer;
   }
 
-  public async getPlayers() {
-    const players = await this.db.player.findMany({
+  public async attackPlayer(dto: AttackPlayerDto) {
+    const attacker = await this.db.player.findUnique({
+      where: { id: dto.attackingPlayerId },
+    });
+
+    const defendingPlayer = await this.db.player.findUnique({
+      where: { id: dto.defendingPlayerId },
       include: { heroes: true },
     });
 
-    return players;
+    if (!attacker || defendingPlayer) {
+      return 'игрок не найден';
+    }
+
+    if (dto.heroIdToAttack) {
+      const heroToAttack = defendingPlayer.heroes.find(
+        (hero) => hero.id === dto.heroIdToAttack,
+      );
+      const isEnoughDamage =
+        heroToAttack.protection <= attacker.currentDamageCount;
+
+      if (!isEnoughDamage) {
+        return 'недостаточно урона';
+      }
+
+      if (
+        heroToAttack &&
+        heroToAttack.placement === HeroPlacement.DEFENDERS_ROW
+      ) {
+        const isDefendingPlayerHaveGuardian = defendingPlayer.heroes.some(
+          (hero) => hero.isGuardian,
+        );
+
+        if (heroToAttack.isGuardian || !isDefendingPlayerHaveGuardian) {
+          await this.db.hero.update({
+            where: { id: dto.heroIdToAttack },
+            data: {
+              placement: HeroPlacement.RESET_DECK,
+              actions: {
+                updateMany: {
+                  where: { heroId: dto.heroIdToAttack },
+                  data: { isUsed: false },
+                },
+              },
+            },
+          });
+
+          await this.db.player.update({
+            data: {
+              currentDamageCount:
+                attacker.currentDamageCount - heroToAttack.protection,
+            },
+            where: { id: dto.attackingPlayerId },
+          });
+        } else {
+          return 'необходимо атаковать стража';
+        }
+      }
+    } else {
+      const updatedDefendingPlayer = await this.db.player.update({
+        data: { health: defendingPlayer.health - attacker.currentDamageCount },
+        where: { id: dto.defendingPlayerId },
+      });
+
+      if (updatedDefendingPlayer.health > attacker.currentDamageCount) {
+        await this.db.player.update({
+          data: { currentDamageCount: 0 },
+          where: { id: dto.attackingPlayerId },
+        });
+      }
+    }
+
+    await this.battlefield.getBattlefieldAndNotifyAllSubs(
+      CLIENT_MESSAGES.BATTLEFIELD_UPDATED,
+      attacker.battlefieldId,
+    );
   }
 }

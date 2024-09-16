@@ -479,6 +479,31 @@
           "gold": 2
         }
       ]
+    },
+    {
+      "name": "Пэйн",
+      "image": "Pain.png",
+      "fraction": "Наруто",
+      "price": 3,
+      "protection": 4,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": ["choice"],
+          "isOptional": false,
+          "damage": 1
+        },
+        {
+          "conditions": ["choice"],
+          "isOptional": false,
+          "gold": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "damage": 4
+        }
+      ]
     }
   ]
 }

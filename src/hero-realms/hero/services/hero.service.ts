@@ -212,9 +212,9 @@ export class HeroService {
         switch (actionName) {
           case ACTION_TYPE.DAMAGE: {
             await this.db.player.update({
-              where: { id: opponentPlayer.id },
+              where: { id: player.id },
               data: {
-                health: opponentPlayer.health - actionValue,
+                currentDamageCount: player.currentDamageCount + actionValue,
               },
             });
             break;

@@ -11,6 +11,7 @@ import {
 import type { CreatePlayerDto } from './dtos/create-Player.dto';
 import { PlayerService } from '../services/player.service';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
+import { AttackPlayerDto } from './dtos/attack-player.dto';
 
 @Controller({ path: 'player', version: '1' })
 export class PlayerController {
@@ -34,5 +35,10 @@ export class PlayerController {
   @Put('end-move/:id')
   public endPlayerMove(@Param('id', ParseIntPipe) id: number) {
     return this.player.endPlayerMove(id);
+  }
+
+  @Put('attack-player')
+  public attackPlayer(@Body() dto: AttackPlayerDto) {
+    return this.player.attackPlayer(dto);
   }
 }

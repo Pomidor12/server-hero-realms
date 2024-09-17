@@ -166,7 +166,7 @@ export class PlayerService {
       include: { heroes: true },
     });
 
-    if (!attacker || defendingPlayer) {
+    if (!attacker || !defendingPlayer) {
       return 'игрок не найден';
     }
 

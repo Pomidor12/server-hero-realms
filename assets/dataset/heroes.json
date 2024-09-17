@@ -504,6 +504,127 @@
           "damage": 4
         }
       ]
+    },
+    {
+      "name": "Джирайя",
+      "image": "Jiraiya.png",
+      "fraction": "Наруто",
+      "price": 4,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 7
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Минато",
+      "image": "Minato.png",
+      "fraction": "Наруто",
+      "price": 5,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 3
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "damage": 6
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Шисуи",
+      "image": "Shisui.png",
+      "fraction": "Наруто",
+      "price": 2,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 3
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": false,
+          "damage": 3
+        }
+      ]
+    },
+    {
+      "name": "Орочимару",
+      "image": "Orochimaru.png",
+      "fraction": "Наруто",
+      "price": 1,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "resetCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Наруто",
+      "image": "Naruto.png",
+      "fraction": "Наруто",
+      "price": 4,
+      "protection": 4,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 3
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Обито",
+      "image": "Obito.png",
+      "fraction": "Наруто",
+      "price": 2,
+      "protection": 3,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        }
+      ]
     }
   ]
 }

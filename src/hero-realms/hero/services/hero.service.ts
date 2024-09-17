@@ -27,6 +27,7 @@ import type {
 } from './hero.interface';
 import type { HireHeroDto } from '../controllers/dtos/hire-hero.dto';
 import type { UseHeroActionsDto } from '../controllers/dtos/use-hero-actions.dto';
+import countForEveryValue from '../utils/count-for-every-value';
 
 @Injectable()
 export class HeroService {
@@ -184,22 +185,32 @@ export class HeroService {
       });
     }
 
+    const fractionHeroes = player.heroes.filter(
+      ({ id, fraction }) => id !== hero.id && fraction === hero.fraction,
+    );
+
+    const defendersCount = player.heroes.reduce(
+      (sum, hero) => sum + (hero.protection ? 1 : 0),
+      0,
+    );
+
+    const guardiansCount = player.heroes.reduce(
+      (sum, hero) => sum + (hero.isGuardian ? 1 : 0),
+      0,
+    );
+
     for (const action of hero.actions) {
       if (action.isUsed) {
         continue;
       }
 
-      const isFractionConditionScs =
-        action.conditions.includes(ActionCondition.FRACTION) &&
-        !player.heroes.some(
-          ({ id, fraction }) => id !== hero.id && fraction === hero.fraction,
-        );
+      if (action.conditions.includes(ActionCondition.FRACTION)) {
+        if (!fractionHeroes.length) {
+          continue;
+        }
+      }
 
-      const isSacrificeConditionScs =
-        action.conditions.includes(ActionCondition.SACRIFICE) &&
-        dto.heroIdForAction;
-
-      if (isFractionConditionScs || isSacrificeConditionScs) {
+      if (action.conditions.includes(ActionCondition.SACRIFICE)) {
         continue;
       }
 
@@ -209,45 +220,84 @@ export class HeroService {
       ) as ActionWithoutAdditionalInfo;
 
       for (const [actionName, actionValue] of Object.entries(actionTypes)) {
+        if (!actionValue) {
+          continue;
+        }
+
+        console.log(actionName, actionValue);
         switch (actionName) {
           case ACTION_TYPE.DAMAGE: {
+            const damage = countForEveryValue({
+              value: actionValue,
+              defendersCount,
+              guardiansCount,
+              conditions: action.conditions,
+              fractionCount: hero.protection
+                ? fractionHeroes.length + 1
+                : fractionHeroes.length,
+            });
+
             await this.db.player.update({
               where: { id: player.id },
               data: {
-                currentDamageCount: player.currentDamageCount + actionValue,
+                currentDamageCount: player.currentDamageCount + damage,
               },
             });
             break;
           }
 
           case ACTION_TYPE.GOLD: {
+            const gold = countForEveryValue({
+              value: actionValue,
+              defendersCount,
+              guardiansCount,
+              conditions: action.conditions,
+              fractionCount: fractionHeroes.length,
+            });
+
             await this.db.player.update({
               where: { id: player.id },
               data: {
-                currentGoldCount: player.currentGoldCount + actionValue,
+                currentGoldCount: player.currentGoldCount + gold,
               },
             });
             break;
           }
 
           case ACTION_TYPE.HEAL: {
+            const heal = countForEveryValue({
+              value: actionValue,
+              defendersCount,
+              guardiansCount,
+              conditions: action.conditions,
+              fractionCount: fractionHeroes.length,
+            });
+
             await this.db.player.update({
               where: { id: player.id },
               data: {
-                health: player.health + actionValue,
+                health: player.health + heal,
               },
             });
             break;
           }
 
           case ACTION_TYPE.TAKE_CARD: {
+            const takeCardValue = countForEveryValue({
+              value: actionValue,
+              defendersCount,
+              guardiansCount,
+              conditions: action.conditions,
+              fractionCount: fractionHeroes.length,
+            });
+
             const playerSelectionDeck = player.heroes.filter(
               (hero) => hero.placement === HeroPlacement.SELECTION_DECK,
             );
             const randomCards = getRandomNumbers(
               0,
               playerSelectionDeck.length - 1,
-              actionValue,
+              takeCardValue,
             );
 
             for (const [index, hero] of playerSelectionDeck.entries()) {

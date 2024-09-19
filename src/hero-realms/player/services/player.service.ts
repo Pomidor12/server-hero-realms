@@ -4,6 +4,7 @@ import { HeroPlacement, PrismaClient } from '@prisma/client';
 import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlefield.service';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumbers } from 'src/hero-realms/utils/math';
+import { HeroService } from 'src/hero-realms/hero/services/hero.service';
 
 import type { CreatePlayerDto } from '../controllers/dtos/create-Player.dto';
 import type { UpdatePlayerDto } from '../controllers/dtos/update-player.dto';
@@ -14,6 +15,7 @@ export class PlayerService {
   constructor(
     private readonly db: PrismaClient,
     private readonly battlefield: BattlefieldService,
+    private readonly hero: HeroService,
   ) {}
 
   public async createPlayer(dto: CreatePlayerDto) {
@@ -26,9 +28,12 @@ export class PlayerService {
         turnOrder: 1,
         currentTurnPlayer: false,
       },
+      include: { heroes: { include: { actions: true } } },
     });
 
-    return player;
+    const heroes = player.heroes.map((hero) => this.hero.normalizeHero(hero));
+
+    return { ...player, heroes };
   }
 
   public async updatePlayer(dto: UpdatePlayerDto) {
@@ -45,6 +50,21 @@ export class PlayerService {
     });
 
     return updatedPlayer;
+  }
+
+  public async getPlayer(id: number) {
+    const player = await this.db.player.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        heroes: { include: { actions: true } },
+      },
+    });
+
+    const heroes = player.heroes.map((hero) => this.hero.normalizeHero(hero));
+
+    return { ...player, heroes };
   }
 
   public async getPlayers() {
@@ -170,6 +190,11 @@ export class PlayerService {
       return 'игрок не найден';
     }
 
+    const isDefendingPlayerHaveGuardian = defendingPlayer.heroes.some(
+      (hero) =>
+        hero.isGuardian && hero.placement === HeroPlacement.DEFENDERS_ROW,
+    );
+
     if (dto.heroIdToAttack) {
       const heroToAttack = defendingPlayer.heroes.find(
         (hero) => hero.id === dto.heroIdToAttack,
@@ -185,10 +210,6 @@ export class PlayerService {
         heroToAttack &&
         heroToAttack.placement === HeroPlacement.DEFENDERS_ROW
       ) {
-        const isDefendingPlayerHaveGuardian = defendingPlayer.heroes.some(
-          (hero) => hero.isGuardian,
-        );
-
         if (heroToAttack.isGuardian || !isDefendingPlayerHaveGuardian) {
           await this.db.hero.update({
             where: { id: dto.heroIdToAttack },
@@ -215,6 +236,10 @@ export class PlayerService {
         }
       }
     } else {
+      if (isDefendingPlayerHaveGuardian) {
+        return 'необходимо атаковать стража';
+      }
+
       const updatedDefendingPlayer = await this.db.player.update({
         data: { health: defendingPlayer.health - attacker.currentDamageCount },
         where: { id: dto.defendingPlayerId },

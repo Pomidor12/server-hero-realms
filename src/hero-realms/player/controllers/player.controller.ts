@@ -27,6 +27,11 @@ export class PlayerController {
     return this.player.getPlayers();
   }
 
+  @Get(':id')
+  public getPlayer(@Param('id', ParseIntPipe) id: number) {
+    return this.player.getPlayer(id);
+  }
+
   @Put()
   public updatePlayer(@Body() dto: UpdatePlayerDto) {
     return this.player.updatePlayer(dto);

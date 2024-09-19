@@ -186,18 +186,32 @@ export class HeroService {
     }
 
     const fractionHeroes = player.heroes.filter(
-      ({ id, fraction }) => id !== hero.id && fraction === hero.fraction,
+      ({ id, fraction, placement }) =>
+        id !== hero.id &&
+        fraction === hero.fraction &&
+        (placement === HeroPlacement.ACTIVE_DECK ||
+          placement === HeroPlacement.DEFENDERS_ROW),
     );
 
     const defendersCount = player.heroes.reduce(
-      (sum, hero) => sum + (hero.protection ? 1 : 0),
+      (sum, hero) =>
+        hero.placement === HeroPlacement.ACTIVE_DECK ||
+        hero.placement === HeroPlacement.DEFENDERS_ROW
+          ? sum + (hero.protection ? 1 : 0)
+          : sum + 0,
       0,
     );
 
     const guardiansCount = player.heroes.reduce(
-      (sum, hero) => sum + (hero.isGuardian ? 1 : 0),
+      (sum, hero) =>
+        hero.placement === HeroPlacement.ACTIVE_DECK ||
+        hero.placement === HeroPlacement.DEFENDERS_ROW
+          ? sum + (hero.isGuardian ? 1 : 0)
+          : sum + 0,
       0,
     );
+
+    let { currentDamageCount, currentGoldCount, health } = player;
 
     for (const action of hero.actions) {
       if (action.isUsed) {
@@ -236,13 +250,7 @@ export class HeroService {
                 ? fractionHeroes.length + 1
                 : fractionHeroes.length,
             });
-
-            await this.db.player.update({
-              where: { id: player.id },
-              data: {
-                currentDamageCount: player.currentDamageCount + damage,
-              },
-            });
+            currentDamageCount += damage;
             break;
           }
 
@@ -254,13 +262,7 @@ export class HeroService {
               conditions: action.conditions,
               fractionCount: fractionHeroes.length,
             });
-
-            await this.db.player.update({
-              where: { id: player.id },
-              data: {
-                currentGoldCount: player.currentGoldCount + gold,
-              },
-            });
+            currentGoldCount += gold;
             break;
           }
 
@@ -272,13 +274,7 @@ export class HeroService {
               conditions: action.conditions,
               fractionCount: fractionHeroes.length,
             });
-
-            await this.db.player.update({
-              where: { id: player.id },
-              data: {
-                health: player.health + heal,
-              },
-            });
+            health += heal;
             break;
           }
 
@@ -308,12 +304,14 @@ export class HeroService {
                 });
               }
             }
+            break;
           }
 
           case ACTION_TYPE.RESET_CARD: {
             if (!dto.heroIdForAction) {
               continue;
             }
+            break;
           }
 
           default: {
@@ -327,6 +325,15 @@ export class HeroService {
         data: { isUsed: true },
       });
     }
+
+    await this.db.player.update({
+      where: { id: player.id },
+      data: {
+        currentDamageCount,
+        currentGoldCount,
+        health,
+      },
+    });
 
     await this.battlefield.getBattlefieldAndNotifyAllSubs(
       CLIENT_MESSAGES.BATTLEFIELD_UPDATED,

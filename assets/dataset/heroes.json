@@ -562,7 +562,7 @@
         },
         {
           "conditions": ["sacrifice"],
-          "isOptional": false,
+          "isOptional": true,
           "damage": 3
         }
       ]

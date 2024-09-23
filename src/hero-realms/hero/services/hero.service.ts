@@ -18,6 +18,7 @@ import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlef
 import { CONVERT_HERO_PLACEMENT } from '../enums/hero-placement.enum';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumber, getRandomNumbers } from 'src/hero-realms/utils/math';
+import countForEveryValue from '../utils/count-for-every-value';
 
 import type {
   ActionWithoutAdditionalInfo,
@@ -27,7 +28,6 @@ import type {
 } from './hero.interface';
 import type { HireHeroDto } from '../controllers/dtos/hire-hero.dto';
 import type { UseHeroActionsDto } from '../controllers/dtos/use-hero-actions.dto';
-import countForEveryValue from '../utils/count-for-every-value';
 
 @Injectable()
 export class HeroService {
@@ -62,6 +62,7 @@ export class HeroService {
               heal: action.heal ?? 0,
               prepareHero: action.prepareHero ?? 0,
               takeCard: action.takeCard ?? 0,
+              sacrificeCard: action.sacrificeCard ?? 0,
               resetCard: action.resetCard ?? 0,
               resetOpponentsCard: action.resetOpponentsCard ?? 0,
               stanOpponentsHero: action.stanOpponentsHero ?? 0,
@@ -127,23 +128,26 @@ export class HeroService {
       },
     });
 
-    const getBattlefieldHeroesCount = await this.db.hero.findMany({
+    const tradingDeckHeroes = await this.db.hero.findMany({
       where: {
         battlefieldId: player.battlefieldId,
         placement: HeroPlacement.TRADING_DECK,
       },
     });
-    const newRandomHeroIndex = getRandomNumber(
-      0,
-      getBattlefieldHeroesCount.length - 1,
-    );
 
-    await this.db.hero.update({
-      where: { id: getBattlefieldHeroesCount[newRandomHeroIndex].id },
-      data: {
-        placement: HeroPlacement.TRADING_ROW,
-      },
-    });
+    if (tradingDeckHeroes.length) {
+      const newRandomHeroIndex = getRandomNumber(
+        0,
+        tradingDeckHeroes.length - 1,
+      );
+
+      await this.db.hero.update({
+        where: { id: tradingDeckHeroes[newRandomHeroIndex].id },
+        data: {
+          placement: HeroPlacement.TRADING_ROW,
+        },
+      });
+    }
 
     await this.db.player.update({
       data: {
@@ -224,8 +228,32 @@ export class HeroService {
         }
       }
 
-      if (action.conditions.includes(ActionCondition.SACRIFICE)) {
+      if (
+        action.conditions.includes(ActionCondition.SACRIFICE) &&
+        !dto.heroIdForAction
+      ) {
         continue;
+      }
+
+      if (action.conditions.includes(ActionCondition.CHOICE)) {
+        if (action.id !== dto.choiceActionId) {
+          continue;
+        }
+      }
+
+      if ((action.resetCard || action.sacrificeCard) && !dto.heroIdForAction) {
+        continue;
+      }
+
+      const isSacrificeSelf =
+        dto.heroId === dto.heroIdForAction &&
+        action.conditions.includes(ActionCondition.SACRIFICE);
+
+      if (isSacrificeSelf) {
+        await this.db.hero.updateMany({
+          where: { id: dto.heroIdForAction },
+          data: { placement: HeroPlacement.SACRIFICIAL_DECK },
+        });
       }
 
       const actionTypes = omit(
@@ -307,9 +335,18 @@ export class HeroService {
             break;
           }
 
+          case ACTION_TYPE.SACRIFICE_CARD:
           case ACTION_TYPE.RESET_CARD: {
-            if (!dto.heroIdForAction) {
-              continue;
+            if (dto.heroIdForAction) {
+              await this.db.hero.update({
+                where: { id: dto.heroIdForAction },
+                data: {
+                  placement:
+                    actionName === ACTION_TYPE.RESET_CARD
+                      ? HeroPlacement.RESET_DECK
+                      : HeroPlacement.SACRIFICIAL_DECK,
+                },
+              });
             }
             break;
           }
@@ -347,6 +384,28 @@ export class HeroService {
       placement: CONVERT_HERO_PLACEMENT.FROM_BD[hero.placement],
       actions: hero.actions.map((action) => ({
         ...action,
+        damage: action.damage ? action.damage : undefined,
+        gold: action.gold ? action.gold : undefined,
+        prepareHero: action.prepareHero ? action.prepareHero : undefined,
+        putPurchasedCardIntoDeck: action.putPurchasedCardIntoDeck
+          ? action.putPurchasedCardIntoDeck
+          : undefined,
+        putToDeckResetedDefender: action.putToDeckResetedDefender
+          ? action.putToDeckResetedDefender
+          : undefined,
+        putToDeckResetedCard: action.putToDeckResetedCard
+          ? action.putToDeckResetedCard
+          : undefined,
+        heal: action.heal ? action.heal : undefined,
+        sacrificeCard: action.sacrificeCard ? action.sacrificeCard : undefined,
+        resetCard: action.resetCard ? action.resetCard : undefined,
+        resetOpponentsCard: action.resetOpponentsCard
+          ? action.resetOpponentsCard
+          : undefined,
+        stanOpponentsHero: action.stanOpponentsHero
+          ? action.stanOpponentsHero
+          : undefined,
+        takeCard: action.takeCard ? action.takeCard : undefined,
         conditions: action.conditions.map(
           (condition) => CONVERT_ACTION_CONDITION.FROM_DB[condition],
         ),

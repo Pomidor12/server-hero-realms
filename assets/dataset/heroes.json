@@ -159,7 +159,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         },
         {
           "conditions": [],
@@ -314,7 +314,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         },
         {
           "conditions": ["fraction"],
@@ -358,7 +358,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         },
         {
           "conditions": ["fraction"],
@@ -382,7 +382,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         },
         {
           "conditions": ["fraction"],
@@ -407,7 +407,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         },
         {
           "conditions": ["sacrifice"],
@@ -544,7 +544,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         }
       ]
     },
@@ -587,7 +587,7 @@
         {
           "conditions": [],
           "isOptional": true,
-          "resetCard": 1
+          "sacrificeCard": 1
         }
       ]
     },
@@ -623,6 +623,113 @@
           "conditions": [],
           "isOptional": false,
           "damage": 2
+        }
+      ]
+    },
+    {
+      "name": "Леорио",
+      "image": "Leorio.png",
+      "fraction": "HunterxHunter",
+      "price": 3,
+      "protection": 3,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Питоу",
+      "image": "Nefetepitou.png",
+      "fraction": "HunterxHunter",
+      "price": 5,
+      "protection": 5,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 3
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "damage": 4
+        }
+      ]
+    },
+    {
+      "name": "Киллуа",
+      "image": "Killua.png",
+      "fraction": "HunterxHunter",
+      "price": 6,
+      "protection": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 5
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "takeCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Нетеро",
+      "image": "Netero.png",
+      "fraction": "HunterxHunter",
+      "price": 8,
+      "protection": 7,
+      "isGuardian": true,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 6
+        },
+        {
+          "conditions": [],
+          "isOptional": true,
+          "takeCard": 1,
+          "resetCard": 1
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": true,
+          "takeCard": 1,
+          "resetCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Хисока",
+      "image": "Hisoka.png",
+      "fraction": "HunterxHunter",
+      "price": 4,
+      "protection": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "resetOpponentsCard": 1
         }
       ]
     }

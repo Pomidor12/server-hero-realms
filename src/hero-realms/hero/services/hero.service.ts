@@ -241,7 +241,12 @@ export class HeroService {
         }
       }
 
-      if ((action.resetCard || action.sacrificeCard) && !dto.heroIdForAction) {
+      if (
+        (action.resetCard ||
+          action.sacrificeCard ||
+          action.putToDeckResetedCard) &&
+        !dto.heroIdForAction
+      ) {
         continue;
       }
 
@@ -345,6 +350,18 @@ export class HeroService {
                     actionName === ACTION_TYPE.RESET_CARD
                       ? HeroPlacement.RESET_DECK
                       : HeroPlacement.SACRIFICIAL_DECK,
+                },
+              });
+            }
+            break;
+          }
+
+          case ACTION_TYPE.PUT_TO_DECK_RESETED_CARD: {
+            if (dto.heroIdForAction) {
+              await this.db.hero.update({
+                where: { id: dto.heroIdForAction },
+                data: {
+                  placement: HeroPlacement.SELECTION_DECK,
                 },
               });
             }

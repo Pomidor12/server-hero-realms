@@ -5,7 +5,7 @@ export const ACTION_TYPE = {
   GOLD: 'gold',
   HEAL: 'heal',
   TAKE_CARD: 'takeCard',
-  SACRIFICE_CARD: 'sacificeCard',
+  SACRIFICE_CARD: 'sacrificeCard',
   RESET_CARD: 'resetCard',
   RESET_OPPONENTS_CARD: 'resetOpponentsCard',
   STAN_OPPONENTS_HERO: 'stanOpponentsHero',

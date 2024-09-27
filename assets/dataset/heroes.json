@@ -169,7 +169,12 @@
         {
           "conditions": ["sacrifice"],
           "isOptional": false,
-          "damage": 2
+          "damage": 5
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "heal": 2
         }
       ]
     },
@@ -563,7 +568,7 @@
         {
           "conditions": ["sacrifice"],
           "isOptional": true,
-          "damage": 3
+          "damage": 7
         }
       ]
     },
@@ -623,6 +628,11 @@
           "conditions": [],
           "isOptional": false,
           "damage": 2
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "heal": 2
         }
       ]
     },
@@ -730,6 +740,86 @@
           "conditions": ["fraction"],
           "isOptional": false,
           "resetOpponentsCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Зангецу",
+      "image": "Zangetsu.png",
+      "fraction": "",
+      "price": 0,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 2
+        }
+      ]
+    },
+    {
+      "name": "Мусаши",
+      "image": "Mushahi.png",
+      "fraction": "",
+      "price": 0,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 1
+        }
+      ]
+    },
+    {
+      "name": "Годжо",
+      "image": "Gojo.png",
+      "fraction": "JujutsuKaisen",
+      "price": 7,
+      "protection": 7,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 4,
+          "stanOpponentsHero": 1
+        }
+      ]
+    },
+    {
+      "name": "Сукуна",
+      "image": "Sukuna.png",
+      "fraction": "JujutsuKaisen",
+      "price": 8,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 8,
+          "takeCard": 1,
+          "stanOpponentsHero": 1
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": true,
+          "damage": 5
+        }
+      ]
+    },
+    {
+      "name": "Юта",
+      "image": "Yuta.png",
+      "fraction": "JujutsuKaisen",
+      "price": 6,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 6,
+          "putToDeckResetedCard": 1
         }
       ]
     }

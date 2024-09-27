@@ -83,6 +83,7 @@ model Player {
   turnOrder          Int          @map("turn_order") @db.Integer()
   currentGoldCount   Int          @default(0) @map("current_gold_count") @db.Integer()
   currentDamageCount Int          @default(0) @map("current_damage_count") @db.Integer()
+  guaranteedHeroes   Int[]        @default([]) @map("guaranteed_heroes")
   heroes             Hero[]
 
   @@map("player")

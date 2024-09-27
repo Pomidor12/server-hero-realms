@@ -9,4 +9,4 @@ export const CLIENT_MESSAGES = {
 export const TRANSPORTS = ['websocket'];
 export const NAMESPACE = 'battlefiled';
 
-export const BASE_HEROES = ['Ято', 'Ехидна'];
+export const BASE_HEROES = ['Ято', 'Ехидна', 'Зангецу', 'Мусаши'];

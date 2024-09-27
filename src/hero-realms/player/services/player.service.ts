@@ -123,11 +123,14 @@ export class PlayerService {
     const newRandomActiveDeck = getRandomNumbers(
       0,
       selectionPlayerDeck.length - 1,
-      5,
+      5 - updatedPlayer.guaranteedHeroes.length,
     );
 
     for (const [index, hero] of selectionPlayerDeck.entries()) {
-      if (newRandomActiveDeck.includes(index)) {
+      if (
+        newRandomActiveDeck.includes(index) ||
+        updatedPlayer.guaranteedHeroes.includes(index)
+      ) {
         await this.db.hero.update({
           where: { id: hero.id },
           data: {

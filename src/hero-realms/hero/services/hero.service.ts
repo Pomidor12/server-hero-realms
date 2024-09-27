@@ -307,7 +307,7 @@ export class HeroService {
               conditions: action.conditions,
               fractionCount: fractionHeroes.length,
             });
-            health += heal;
+            health += health < 80 ? heal : 0;
             break;
           }
 
@@ -362,6 +362,24 @@ export class HeroService {
                 where: { id: dto.heroIdForAction },
                 data: {
                   placement: HeroPlacement.SELECTION_DECK,
+                },
+              });
+
+              player.guaranteedHeroes.push(dto.heroIdForAction);
+              await this.db.player.update({
+                where: { id: player.id },
+                data: { guaranteedHeroes: player.guaranteedHeroes },
+              });
+            }
+            break;
+          }
+
+          case ACTION_TYPE.PREPARE_HERO: {
+            if (dto.heroIdForAction) {
+              await this.db.hero.update({
+                where: { id: dto.heroIdForAction },
+                data: {
+                  placement: HeroPlacement.DEFENDERS_ROW,
                 },
               });
             }

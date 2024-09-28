@@ -1,11 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs-extra';
-import {
-  ActionCondition,
-  Hero,
-  HeroPlacement,
-  PrismaClient,
-} from '@prisma/client';
+import { ActionCondition, HeroPlacement, PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
 
 import { CONVERT_ACTION_CONDITION } from '../enums/action-condition.enum';
@@ -13,12 +8,17 @@ import {
   ACTION_TYPE,
   ADDITIONAL_ACTION_INFO,
   DATASET_PATH_FILE,
+  MAX_PLAYER_HP,
 } from './hero.constant';
 import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlefield.service';
 import { CONVERT_HERO_PLACEMENT } from '../enums/hero-placement.enum';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumber, getRandomNumbers } from 'src/hero-realms/utils/math';
 import countForEveryValue from '../utils/count-for-every-value';
+import {
+  getHeroesInfo,
+  getPlacementForUsedAction,
+} from '../utils/get-info-for-used-action';
 
 import type {
   ActionWithoutAdditionalInfo,
@@ -189,30 +189,9 @@ export class HeroService {
       });
     }
 
-    const fractionHeroes = player.heroes.filter(
-      ({ id, fraction, placement }) =>
-        id !== hero.id &&
-        fraction === hero.fraction &&
-        (placement === HeroPlacement.ACTIVE_DECK ||
-          placement === HeroPlacement.DEFENDERS_ROW),
-    );
-
-    const defendersCount = player.heroes.reduce(
-      (sum, hero) =>
-        hero.placement === HeroPlacement.ACTIVE_DECK ||
-        hero.placement === HeroPlacement.DEFENDERS_ROW
-          ? sum + (hero.protection ? 1 : 0)
-          : sum + 0,
-      0,
-    );
-
-    const guardiansCount = player.heroes.reduce(
-      (sum, hero) =>
-        hero.placement === HeroPlacement.ACTIVE_DECK ||
-        hero.placement === HeroPlacement.DEFENDERS_ROW
-          ? sum + (hero.isGuardian ? 1 : 0)
-          : sum + 0,
-      0,
+    const { defendersCount, fractionHeroes, guardiansCount } = getHeroesInfo(
+      player.heroes,
+      hero,
     );
 
     let { currentDamageCount, currentGoldCount, health } = player;
@@ -241,15 +220,6 @@ export class HeroService {
         }
       }
 
-      if (
-        (action.resetCard ||
-          action.sacrificeCard ||
-          action.putToDeckResetedCard) &&
-        !dto.heroIdForAction
-      ) {
-        continue;
-      }
-
       const isSacrificeSelf =
         dto.heroId === dto.heroIdForAction &&
         action.conditions.includes(ActionCondition.SACRIFICE);
@@ -271,7 +241,6 @@ export class HeroService {
           continue;
         }
 
-        console.log(actionName, actionValue);
         switch (actionName) {
           case ACTION_TYPE.DAMAGE: {
             const damage = countForEveryValue({
@@ -307,52 +276,27 @@ export class HeroService {
               conditions: action.conditions,
               fractionCount: fractionHeroes.length,
             });
-            health += health < 80 ? heal : 0;
+            health += heal;
             break;
           }
 
-          case ACTION_TYPE.TAKE_CARD: {
-            const takeCardValue = countForEveryValue({
-              value: actionValue,
-              defendersCount,
-              guardiansCount,
-              conditions: action.conditions,
-              fractionCount: fractionHeroes.length,
-            });
-
-            const playerSelectionDeck = player.heroes.filter(
-              (hero) => hero.placement === HeroPlacement.SELECTION_DECK,
-            );
-            const randomCards = getRandomNumbers(
-              0,
-              playerSelectionDeck.length - 1,
-              takeCardValue,
-            );
-
-            for (const [index, hero] of playerSelectionDeck.entries()) {
-              if (randomCards.includes(index)) {
-                await this.db.hero.updateMany({
-                  where: { id: hero.id },
-                  data: { placement: HeroPlacement.ACTIVE_DECK },
-                });
-              }
-            }
-            break;
-          }
-
+          case ACTION_TYPE.STAN_OPPONENTS_HERO:
+          case ACTION_TYPE.PREPARE_HERO:
           case ACTION_TYPE.SACRIFICE_CARD:
           case ACTION_TYPE.RESET_CARD: {
-            if (dto.heroIdForAction) {
+            const placement = getPlacementForUsedAction(actionName);
+
+            if (dto.heroIdForAction && placement) {
               await this.db.hero.update({
                 where: { id: dto.heroIdForAction },
                 data: {
-                  placement:
-                    actionName === ACTION_TYPE.RESET_CARD
-                      ? HeroPlacement.RESET_DECK
-                      : HeroPlacement.SACRIFICIAL_DECK,
+                  placement,
                 },
               });
+            } else {
+              continue;
             }
+
             break;
           }
 
@@ -374,14 +318,50 @@ export class HeroService {
             break;
           }
 
-          case ACTION_TYPE.PREPARE_HERO: {
-            if (dto.heroIdForAction) {
-              await this.db.hero.update({
-                where: { id: dto.heroIdForAction },
-                data: {
-                  placement: HeroPlacement.DEFENDERS_ROW,
-                },
-              });
+          case ACTION_TYPE.TAKE_CARD: {
+            const takeCardValue = countForEveryValue({
+              value: actionValue,
+              defendersCount,
+              guardiansCount,
+              conditions: action.conditions,
+              fractionCount: fractionHeroes.length,
+            });
+
+            const playerSelectionDeck = player.heroes.filter(
+              (hero) => hero.placement === HeroPlacement.SELECTION_DECK,
+            );
+
+            let takedCardCount = 0;
+            const randomCards =
+              takeCardValue >= player.guaranteedHeroes.length
+                ? [
+                    ...getRandomNumbers(
+                      0,
+                      playerSelectionDeck.length - 1,
+                      takeCardValue - player.guaranteedHeroes.length,
+                    ),
+                    ...player.guaranteedHeroes,
+                  ]
+                : player.guaranteedHeroes;
+
+            for (const [index, hero] of playerSelectionDeck.entries()) {
+              if (takedCardCount >= takeCardValue) {
+                break;
+              }
+
+              if (randomCards.includes(index)) {
+                takedCardCount++;
+                await this.db.hero.updateMany({
+                  where: { id: hero.id },
+                  data: { placement: HeroPlacement.ACTIVE_DECK },
+                });
+
+                if (player.guaranteedHeroes.includes(index)) {
+                  player.guaranteedHeroes = player.guaranteedHeroes.filter(
+                    (heroId) => heroId !== index,
+                  );
+                }
+              }
             }
             break;
           }
@@ -403,7 +383,8 @@ export class HeroService {
       data: {
         currentDamageCount,
         currentGoldCount,
-        health,
+        health: health < MAX_PLAYER_HP ? health : MAX_PLAYER_HP,
+        guaranteedHeroes: player.guaranteedHeroes,
       },
     });
 

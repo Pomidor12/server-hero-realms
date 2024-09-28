@@ -5,6 +5,7 @@ import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlef
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumbers } from 'src/hero-realms/utils/math';
 import { HeroService } from 'src/hero-realms/hero/services/hero.service';
+import { PLAYER_ACTIVE_DECK_COUNT } from './player.constant';
 
 import type { CreatePlayerDto } from '../controllers/dtos/create-Player.dto';
 import type { UpdatePlayerDto } from '../controllers/dtos/update-player.dto';
@@ -76,20 +77,15 @@ export class PlayerService {
   }
 
   public async endPlayerMove(id: number) {
-    const updatedPlayer = await this.db.player.update({
+    const player = await this.db.player.findUnique({
       where: { id },
-      data: {
-        currentTurnPlayer: false,
-        currentGoldCount: 0,
-        currentDamageCount: 0,
-      },
       include: {
         battlefield: { include: { players: true } },
         heroes: true,
       },
     });
 
-    for (const hero of updatedPlayer.heroes) {
+    for (const hero of player.heroes) {
       if (hero.placement === HeroPlacement.ACTIVE_DECK) {
         await this.db.hero.update({
           where: { id: hero.id },
@@ -103,7 +99,7 @@ export class PlayerService {
       });
     }
 
-    const [opponentPlayer] = updatedPlayer.battlefield.players.filter(
+    const [opponentPlayer] = player.battlefield.players.filter(
       (player) => player.id !== id,
     );
 
@@ -116,20 +112,23 @@ export class PlayerService {
       });
     }
 
-    const selectionPlayerDeck = updatedPlayer.heroes.filter(
+    const selectionPlayerDeck = player.heroes.filter(
       (hero) => hero.placement === HeroPlacement.SELECTION_DECK,
     );
+
+    const randomNumbersLength =
+      PLAYER_ACTIVE_DECK_COUNT - player.guaranteedHeroes.length;
 
     const newRandomActiveDeck = getRandomNumbers(
       0,
       selectionPlayerDeck.length - 1,
-      5 - updatedPlayer.guaranteedHeroes.length,
+      randomNumbersLength,
     );
 
     for (const [index, hero] of selectionPlayerDeck.entries()) {
       if (
         newRandomActiveDeck.includes(index) ||
-        updatedPlayer.guaranteedHeroes.includes(index)
+        player.guaranteedHeroes.includes(hero.id)
       ) {
         await this.db.hero.update({
           where: { id: hero.id },
@@ -143,11 +142,17 @@ export class PlayerService {
             placement: HeroPlacement.ACTIVE_DECK,
           },
         });
+
+        if (player.guaranteedHeroes.includes(hero.id)) {
+          player.guaranteedHeroes = player.guaranteedHeroes.filter(
+            (heroId) => heroId !== hero.id,
+          );
+        }
       }
     }
 
-    if (selectionPlayerDeck.length < 5) {
-      const resetPlayerDeck = updatedPlayer.heroes.filter(
+    if (selectionPlayerDeck.length < PLAYER_ACTIVE_DECK_COUNT) {
+      const resetPlayerDeck = player.heroes.filter(
         (hero) =>
           hero.placement === HeroPlacement.RESET_DECK ||
           hero.placement === HeroPlacement.ACTIVE_DECK,
@@ -170,6 +175,16 @@ export class PlayerService {
         });
       }
     }
+
+    const updatedPlayer = await this.db.player.update({
+      where: { id },
+      data: {
+        currentTurnPlayer: false,
+        currentGoldCount: 0,
+        currentDamageCount: 0,
+        guaranteedHeroes: player.guaranteedHeroes,
+      },
+    });
 
     await this.battlefield.getBattlefieldAndNotifyAllSubs(
       CLIENT_MESSAGES.BATTLEFIELD_UPDATED,

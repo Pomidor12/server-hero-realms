@@ -1,0 +1,1 @@
+export const PLAYER_ACTIVE_DECK_COUNT = 5;

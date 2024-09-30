@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
 
-import { HeroService } from '../services/hero.service';
+import { HeroService } from '../services/hero/hero.service';
 
 import { HireHeroDto } from './dtos/hire-hero.dto';
 import { UseHeroActionsDto } from './dtos/use-hero-actions.dto';

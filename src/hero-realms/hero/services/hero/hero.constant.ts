@@ -23,5 +23,3 @@ export const ADDITIONAL_ACTION_INFO = [
   'isOptional',
   'isUsed',
 ] as const;
-
-export const MAX_PLAYER_HP = 80;

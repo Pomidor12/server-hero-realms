@@ -5,7 +5,7 @@ import {
   HeroPlacement,
 } from '@prisma/client';
 
-import { ACTION_TYPE } from '../services/hero.constant';
+import { ACTION_TYPE } from '../services/hero/hero.constant';
 
 import type { UseHeroActionsDto } from '../controllers/dtos/use-hero-actions.dto';
 

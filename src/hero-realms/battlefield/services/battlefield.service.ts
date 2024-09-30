@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Action, PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
 
-import { HeroService } from 'src/hero-realms/hero/services/hero.service';
+import { HeroService } from 'src/hero-realms/hero/services/hero/hero.service';
 import { getRandomNumber, getRandomNumbers } from '../../utils/math';
 import { HERO_PLACEMENT } from 'src/hero-realms/hero/enums/hero-placement.enum';
 import {
@@ -21,6 +21,7 @@ import type { RawBattlefield } from './battlefield.interface';
 export class BattlefieldService {
   constructor(
     private readonly db: PrismaClient,
+    @Inject(forwardRef(() => HeroService))
     private readonly hero: HeroService,
     private readonly socket: SocketService,
   ) {}

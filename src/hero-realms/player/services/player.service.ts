@@ -4,8 +4,8 @@ import { HeroPlacement, PrismaClient } from '@prisma/client';
 import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlefield.service';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumbers } from 'src/hero-realms/utils/math';
-import { HeroService } from 'src/hero-realms/hero/services/hero.service';
-import { PLAYER_ACTIVE_DECK_COUNT } from './player.constant';
+import { HeroService } from 'src/hero-realms/hero/services/hero/hero.service';
+import { MIN_PLAYER_HP, PLAYER_ACTIVE_DECK_COUNT } from './player.constant';
 
 import type { CreatePlayerDto } from '../controllers/dtos/create-Player.dto';
 import type { UpdatePlayerDto } from '../controllers/dtos/update-player.dto';
@@ -258,17 +258,17 @@ export class PlayerService {
         return 'необходимо атаковать стража';
       }
 
-      const updatedDefendingPlayer = await this.db.player.update({
-        data: { health: defendingPlayer.health - attacker.currentDamageCount },
+      const newDefengingPlayeHp =
+        defendingPlayer.health - attacker.currentDamageCount;
+      await this.db.player.update({
+        data: { health: Math.min(newDefengingPlayeHp, MIN_PLAYER_HP) },
         where: { id: dto.defendingPlayerId },
       });
 
-      if (updatedDefendingPlayer.health > attacker.currentDamageCount) {
-        await this.db.player.update({
-          data: { currentDamageCount: 0 },
-          where: { id: dto.attackingPlayerId },
-        });
-      }
+      await this.db.player.update({
+        data: { currentDamageCount: 0 },
+        where: { id: dto.attackingPlayerId },
+      });
     }
 
     await this.battlefield.getBattlefieldAndNotifyAllSubs(

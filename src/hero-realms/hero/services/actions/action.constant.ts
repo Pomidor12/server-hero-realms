@@ -1,0 +1,8 @@
+import { ACTION_TYPE } from '../hero/hero.constant';
+
+export const ACTIONS_WITH_UPDATE_PLACEMENT = [
+  ACTION_TYPE.STAN_OPPONENTS_HERO,
+  ACTION_TYPE.PREPARE_HERO,
+  ACTION_TYPE.SACRIFICE_CARD,
+  ACTION_TYPE.RESET_CARD,
+] as unknown as string;

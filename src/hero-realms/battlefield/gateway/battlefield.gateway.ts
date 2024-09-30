@@ -14,20 +14,25 @@ import {
   TRANSPORTS,
 } from '../battlefield.constant';
 import { BattlefieldService } from '../services/battlefield.service';
-import { PrepareBattlefieldDto } from '../services/battlefield.interface';
+import { SocketService } from 'libs/socket/services/socket.service';
+
+import type { PrepareBattlefieldDto } from '../services/battlefield.interface';
 
 @WebSocketGateway({ transports: TRANSPORTS, namespace: NAMESPACE })
 export class BattlefieldGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private readonly battlefield: BattlefieldService) {}
+  constructor(
+    private readonly battlefield: BattlefieldService,
+    private readonly socket: SocketService,
+  ) {}
 
-  public handleConnection(client: Socket, ...args: any[]) {
-    this.battlefield.handleConnect(client);
+  public handleConnection(client: Socket) {
+    this.socket.onConnect(client);
   }
 
   public handleDisconnect(client: Socket) {
-    this.battlefield.handleDisconnect(client);
+    this.socket.onDisconnect(client);
   }
 
   @SubscribeMessage(CLIENT_MESSAGES.PREPARE_BATTLEFIELD)

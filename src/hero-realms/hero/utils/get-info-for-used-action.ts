@@ -1,6 +1,13 @@
-import { type Hero, HeroPlacement } from '@prisma/client';
+import {
+  type Action,
+  type Hero,
+  ActionCondition,
+  HeroPlacement,
+} from '@prisma/client';
 
 import { ACTION_TYPE } from '../services/hero.constant';
+
+import type { UseHeroActionsDto } from '../controllers/dtos/use-hero-actions.dto';
 
 export const getHeroesInfo = (playerHeroes: Hero[], usedHero: Hero) => {
   const fractionHeroes = playerHeroes.filter(
@@ -55,4 +62,35 @@ export const getPlacementForUsedAction = (action: string) => {
       return '';
     }
   }
+};
+
+export const getIsActionCanBeUsed = (
+  action: Action,
+  dto: UseHeroActionsDto,
+  fractionHeroesLen: number,
+) => {
+  if (action.isUsed) {
+    return false;
+  }
+
+  if (action.conditions.includes(ActionCondition.FRACTION)) {
+    if (!fractionHeroesLen) {
+      return false;
+    }
+  }
+
+  if (
+    action.conditions.includes(ActionCondition.SACRIFICE) &&
+    !dto.heroIdForAction
+  ) {
+    return false;
+  }
+
+  if (action.conditions.includes(ActionCondition.CHOICE)) {
+    if (action.id !== dto.choiceActionId) {
+      return false;
+    }
+  }
+
+  return true;
 };

@@ -17,8 +17,10 @@ import { getRandomNumber, getRandomNumbers } from 'src/hero-realms/utils/math';
 import countForEveryValue from '../utils/count-for-every-value';
 import {
   getHeroesInfo,
+  getIsActionCanBeUsed,
   getPlacementForUsedAction,
 } from '../utils/get-info-for-used-action';
+import { SocketService } from 'libs/socket/services/socket.service';
 
 import type {
   ActionWithoutAdditionalInfo,
@@ -35,6 +37,7 @@ export class HeroService {
     private readonly db: PrismaClient,
     @Inject(forwardRef(() => BattlefieldService))
     private readonly battlefield: BattlefieldService,
+    private readonly socket: SocketService,
   ) {}
 
   public async getHeroes() {
@@ -197,27 +200,14 @@ export class HeroService {
     let { currentDamageCount, currentGoldCount, health } = player;
 
     for (const action of hero.actions) {
-      if (action.isUsed) {
+      const isActionCanBeUsed = getIsActionCanBeUsed(
+        action,
+        dto,
+        fractionHeroes.length,
+      );
+
+      if (!isActionCanBeUsed) {
         continue;
-      }
-
-      if (action.conditions.includes(ActionCondition.FRACTION)) {
-        if (!fractionHeroes.length) {
-          continue;
-        }
-      }
-
-      if (
-        action.conditions.includes(ActionCondition.SACRIFICE) &&
-        !dto.heroIdForAction
-      ) {
-        continue;
-      }
-
-      if (action.conditions.includes(ActionCondition.CHOICE)) {
-        if (action.id !== dto.choiceActionId) {
-          continue;
-        }
       }
 
       const isSacrificeSelf =
@@ -318,6 +308,7 @@ export class HeroService {
             break;
           }
 
+
           case ACTION_TYPE.TAKE_CARD: {
             const takeCardValue = countForEveryValue({
               value: actionValue,
@@ -332,33 +323,31 @@ export class HeroService {
             );
 
             let takedCardCount = 0;
-            const randomCards =
-              takeCardValue >= player.guaranteedHeroes.length
-                ? [
-                    ...getRandomNumbers(
-                      0,
-                      playerSelectionDeck.length - 1,
-                      takeCardValue - player.guaranteedHeroes.length,
-                    ),
-                    ...player.guaranteedHeroes,
-                  ]
-                : player.guaranteedHeroes;
-
+            const randomCards = getRandomNumbers(
+              0,
+              playerSelectionDeck.length - 1,
+              takeCardValue - player.guaranteedHeroes.length,
+            );
+            console.log(randomCards);
+            console.log(player.guaranteedHeroes);
             for (const [index, hero] of playerSelectionDeck.entries()) {
               if (takedCardCount >= takeCardValue) {
                 break;
               }
 
-              if (randomCards.includes(index)) {
+              if (
+                randomCards.includes(index) ||
+                player.guaranteedHeroes.includes(hero.id)
+              ) {
                 takedCardCount++;
                 await this.db.hero.updateMany({
                   where: { id: hero.id },
                   data: { placement: HeroPlacement.ACTIVE_DECK },
                 });
 
-                if (player.guaranteedHeroes.includes(index)) {
+                if (player.guaranteedHeroes.includes(hero.id)) {
                   player.guaranteedHeroes = player.guaranteedHeroes.filter(
-                    (heroId) => heroId !== index,
+                    (heroId) => heroId !== hero.id,
                   );
                 }
               }

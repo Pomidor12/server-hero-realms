@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Action, HeroPlacement, PrismaClient } from '@prisma/client';
+import { Action, PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
-import { Socket } from 'socket.io';
 
-import type { CreateBattlefieldDto } from '../controllers/dtos/create-battlefield.dto';
-import { UpdateBattlefieldDto } from '../controllers/dtos/update-battlefield.dto';
 import { HeroService } from 'src/hero-realms/hero/services/hero.service';
 import { getRandomNumber, getRandomNumbers } from '../../utils/math';
 import { HERO_PLACEMENT } from 'src/hero-realms/hero/enums/hero-placement.enum';
@@ -14,30 +11,19 @@ import {
   MIN_BATTLEFIELD_PLAYERS_COUNT,
   TRADING_ROW_CARDS_COUNT,
 } from '../battlefield.constant';
-import { RawBattlefield } from './battlefield.interface';
+import { SocketService } from 'libs/socket/services/socket.service';
+
+import type { CreateBattlefieldDto } from '../controllers/dtos/create-battlefield.dto';
+import type { UpdateBattlefieldDto } from '../controllers/dtos/update-battlefield.dto';
+import type { RawBattlefield } from './battlefield.interface';
 
 @Injectable()
 export class BattlefieldService {
-  private conections = new Map<string, Socket>();
-
   constructor(
     private readonly db: PrismaClient,
     private readonly hero: HeroService,
+    private readonly socket: SocketService,
   ) {}
-
-  public handleConnect(client: Socket) {
-    this.conections.set(client.id, client);
-  }
-
-  public handleDisconnect(client: Socket) {
-    this.conections.delete(client.id);
-  }
-
-  public notifyAllSubsribers(event: string, data: any) {
-    for (const conection of this.conections.values()) {
-      conection.emit(event, data);
-    }
-  }
 
   public async createBattleField(dto: CreateBattlefieldDto) {
     const battlefield = await this.db.battlefield.create({
@@ -197,7 +183,10 @@ export class BattlefieldService {
       battlefield = await this.getBattleFiled(id);
     }
 
-    this.notifyAllSubsribers(CLIENT_MESSAGES.BATTLEFIELD_UPDATED, battlefield);
+    this.socket.notifyAllSubsribers(
+      CLIENT_MESSAGES.BATTLEFIELD_UPDATED,
+      battlefield,
+    );
   }
 
   public async getBattlefieldAndNotifyAllSubs(event: string, id: number) {
@@ -209,7 +198,10 @@ export class BattlefieldService {
       },
     });
 
-    this.notifyAllSubsribers(event, this.normalizedBattlefield(battlefield));
+    this.socket.notifyAllSubsribers(
+      event,
+      this.normalizedBattlefield(battlefield),
+    );
   }
 
   private normalizedBattlefield(battlefield: RawBattlefield) {

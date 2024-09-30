@@ -7,9 +7,10 @@ import { PlayerService } from './player/services/player.service';
 import { BattlefieldService } from './battlefield/services/battlefield.service';
 import { HeroService } from './hero/services/hero.service';
 import { BattlefieldGateway } from './battlefield/gateway/battlefield.gateway';
+import { SocketModule } from 'libs/socket/socket.module';
 
 @Module({
-  imports: [],
+  imports: [SocketModule],
   controllers: [PlayerController, BattlefieldController, HeroController],
   providers: [
     PlayerService,

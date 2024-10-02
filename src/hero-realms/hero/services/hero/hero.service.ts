@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs-extra';
-import { HeroPlacement, PrismaClient } from '@prisma/client';
+import { ActionCondition, HeroPlacement, PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
 
 import { CONVERT_ACTION_CONDITION } from '../../enums/action-condition.enum';
@@ -34,8 +34,11 @@ export class HeroService {
     private readonly actions: ActionsService,
   ) {}
 
-  public async getHeroes() {
-    const heroes = await this.db.hero.findMany({ include: { actions: true } });
+  public async getHeroes(byBattlefieldId: number = null) {
+    const heroes = await this.db.hero.findMany({
+      include: { actions: true },
+      where: { battlefieldId: byBattlefieldId },
+    });
 
     const normalizedHeroes = heroes.map((hero) => this.normalizeHero(hero));
 
@@ -50,22 +53,11 @@ export class HeroService {
         actions: {
           createMany: {
             data: hero.actions.map((action) => ({
+              ...omit(action, ['heroId', 'id']),
               isOptional: action.isOptional,
               conditions: action.conditions.map(
                 (condition) => CONVERT_ACTION_CONDITION.TO_DB[condition],
               ),
-              damage: action.damage ?? 0,
-              gold: action.gold ?? 0,
-              heal: action.heal ?? 0,
-              prepareHero: action.prepareHero ?? 0,
-              takeCard: action.takeCard ?? 0,
-              sacrificeCard: action.sacrificeCard ?? 0,
-              resetCard: action.resetCard ?? 0,
-              resetOpponentsCard: action.resetOpponentsCard ?? 0,
-              stanOpponentsHero: action.stanOpponentsHero ?? 0,
-              putToDeckResetedCard: action.putToDeckResetedCard ?? 0,
-              putToDeckResetedDefender: action.putToDeckResetedDefender ?? 0,
-              putPurchasedCardIntoDeck: action.putPurchasedCardIntoDeck ?? 0,
             })),
           },
         },
@@ -192,9 +184,21 @@ export class HeroService {
     );
 
     for (const action of hero.actions) {
+      const isSacrificeSelf =
+        dto.heroId === dto.heroIdForAction &&
+        action.conditions.includes(ActionCondition.SACRIFICE);
+
+      if (isSacrificeSelf) {
+        await this.db.hero.updateMany({
+          where: { id: dto.heroIdForAction },
+          data: { placement: HeroPlacement.SACRIFICIAL_DECK },
+        });
+      }
+
       const isActionCanBeUsed = getIsActionCanBeUsed(
         action,
         dto,
+        hero.name,
         fractionHeroes.length,
       );
 

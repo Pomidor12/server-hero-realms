@@ -1,5 +1,9 @@
 export const MIN_BATTLEFIELD_PLAYERS_COUNT = 2;
 export const TRADING_ROW_CARDS_COUNT = 6;
+export const INITIAL_CARDS_COUNT = {
+  FIRST_PLAYER: 3,
+  SECOND_PLAYER: 5,
+};
 
 export const CLIENT_MESSAGES = {
   PREPARE_BATTLEFIELD: 'client:prepare-battlefiled',

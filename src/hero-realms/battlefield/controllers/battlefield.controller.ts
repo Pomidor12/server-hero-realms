@@ -10,8 +10,8 @@ import {
 
 import { BattlefieldService } from '../services/battlefield.service';
 
-import { CreateBattlefieldDto } from './dtos/create-battlefield.dto';
-import { UpdateBattlefieldDto } from './dtos/update-battlefield.dto';
+import type { CreateBattlefieldDto } from './dtos/create-battlefield.dto';
+import type { UpdateBattlefieldDto } from './dtos/update-battlefield.dto';
 
 @Controller({ path: 'battlefield', version: '1' })
 export class BattlefieldController {

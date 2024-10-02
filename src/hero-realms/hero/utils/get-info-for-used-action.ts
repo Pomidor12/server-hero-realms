@@ -67,6 +67,7 @@ export const getPlacementForUsedAction = (action: string) => {
 export const getIsActionCanBeUsed = (
   action: Action,
   dto: UseHeroActionsDto,
+  heroName: string,
   fractionHeroesLen: number,
 ) => {
   if (action.isUsed) {
@@ -79,10 +80,16 @@ export const getIsActionCanBeUsed = (
     }
   }
 
-  if (
-    action.conditions.includes(ActionCondition.SACRIFICE) &&
-    !dto.heroIdForAction
-  ) {
+  if (action.conditions.includes(ActionCondition.SACRIFICE)) {
+    if (dto.heroId === dto.heroIdForAction) {
+      return true;
+    }
+
+    // TODO либо новое поле sacrificeSelf, либо просто в константы тогда
+    if (heroName === 'Итачи') {
+      return true;
+    }
+
     return false;
   }
 

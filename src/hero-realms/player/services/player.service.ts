@@ -3,9 +3,9 @@ import { HeroPlacement, PrismaClient } from '@prisma/client';
 
 import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlefield.service';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
-import { getRandomNumbers } from 'src/hero-realms/utils/math';
 import { HeroService } from 'src/hero-realms/hero/services/hero/hero.service';
-import { MIN_PLAYER_HP, PLAYER_ACTIVE_DECK_COUNT } from './player.constant';
+import { DEFAULT_PLAYER_HP, MIN_PLAYER_HP } from './player.constant';
+import { PlayerHelperService } from './helper/player-helper.service';
 
 import type { CreatePlayerDto } from '../controllers/dtos/create-Player.dto';
 import type { UpdatePlayerDto } from '../controllers/dtos/update-player.dto';
@@ -17,6 +17,7 @@ export class PlayerService {
     private readonly db: PrismaClient,
     private readonly battlefield: BattlefieldService,
     private readonly hero: HeroService,
+    private readonly playerHelper: PlayerHelperService,
   ) {}
 
   public async createPlayer(dto: CreatePlayerDto) {
@@ -25,7 +26,7 @@ export class PlayerService {
         name: dto.name,
         battlefieldId: dto.battlefieldId,
         image: '',
-        health: 50,
+        health: DEFAULT_PLAYER_HP,
         turnOrder: 1,
         currentTurnPlayer: false,
       },
@@ -112,69 +113,7 @@ export class PlayerService {
       });
     }
 
-    const selectionPlayerDeck = player.heroes.filter(
-      (hero) => hero.placement === HeroPlacement.SELECTION_DECK,
-    );
-
-    const randomNumbersLength =
-      PLAYER_ACTIVE_DECK_COUNT - player.guaranteedHeroes.length;
-
-    const newRandomActiveDeck = getRandomNumbers(
-      0,
-      selectionPlayerDeck.length - 1,
-      randomNumbersLength,
-    );
-
-    for (const [index, hero] of selectionPlayerDeck.entries()) {
-      if (
-        newRandomActiveDeck.includes(index) ||
-        player.guaranteedHeroes.includes(hero.id)
-      ) {
-        await this.db.hero.update({
-          where: { id: hero.id },
-          data: {
-            actions: {
-              updateMany: {
-                where: { heroId: hero.id },
-                data: { isUsed: false },
-              },
-            },
-            placement: HeroPlacement.ACTIVE_DECK,
-          },
-        });
-
-        if (player.guaranteedHeroes.includes(hero.id)) {
-          player.guaranteedHeroes = player.guaranteedHeroes.filter(
-            (heroId) => heroId !== hero.id,
-          );
-        }
-      }
-    }
-
-    if (selectionPlayerDeck.length < PLAYER_ACTIVE_DECK_COUNT) {
-      const resetPlayerDeck = player.heroes.filter(
-        (hero) =>
-          hero.placement === HeroPlacement.RESET_DECK ||
-          hero.placement === HeroPlacement.ACTIVE_DECK,
-      );
-
-      const newRandomActiveDeck = getRandomNumbers(
-        0,
-        resetPlayerDeck.length - 1,
-        5 - selectionPlayerDeck.length,
-      );
-
-      for (const [index, hero] of resetPlayerDeck.entries()) {
-        await this.db.hero.update({
-          where: { id: hero.id },
-          data: {
-            placement: newRandomActiveDeck.includes(index)
-              ? HeroPlacement.ACTIVE_DECK
-              : HeroPlacement.SELECTION_DECK,
-          },
-        });
-      }
-    }
+    await this.playerHelper.takeActiveDeck(player);
 
     const updatedPlayer = await this.db.player.update({
       where: { id },
@@ -261,7 +200,7 @@ export class PlayerService {
       const newDefengingPlayeHp =
         defendingPlayer.health - attacker.currentDamageCount;
       await this.db.player.update({
-        data: { health: Math.min(newDefengingPlayeHp, MIN_PLAYER_HP) },
+        data: { health: Math.max(newDefengingPlayeHp, MIN_PLAYER_HP) },
         where: { id: dto.defendingPlayerId },
       });
 

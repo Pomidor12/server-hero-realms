@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Action, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import omit from 'lodash.omit';
 
 import { HeroService } from 'src/hero-realms/hero/services/hero/hero.service';
@@ -8,6 +8,7 @@ import { HERO_PLACEMENT } from 'src/hero-realms/hero/enums/hero-placement.enum';
 import {
   BASE_HEROES,
   CLIENT_MESSAGES,
+  INITIAL_CARDS_COUNT,
   MIN_BATTLEFIELD_PLAYERS_COUNT,
   TRADING_ROW_CARDS_COUNT,
 } from '../battlefield.constant';
@@ -135,7 +136,7 @@ export class BattlefieldService {
     );
 
     if (filteredPlayers.length) {
-      const randomPlayerIndex = getRandomNumber(1, 2) - 1;
+      const randomPlayerIndex = getRandomNumber(0, 1);
       const playerToChangeTurnOrder = battlefield.players[randomPlayerIndex];
 
       await this.db.player.update({
@@ -151,9 +152,10 @@ export class BattlefieldService {
       baseHeroes.push(...duplicates);
 
       for (const player of filteredPlayers) {
-        const createdActiveHeroesActions: Action[] = [];
         const initialCountCards =
-          playerToChangeTurnOrder.id === player.id ? 3 : 5;
+          playerToChangeTurnOrder.id === player.id
+            ? INITIAL_CARDS_COUNT.FIRST_PLAYER
+            : INITIAL_CARDS_COUNT.SECOND_PLAYER;
 
         const indexCardsForActiveDeck = getRandomNumbers(
           0,
@@ -165,7 +167,7 @@ export class BattlefieldService {
           const omittedHero = omit(hero, 'id');
           const isActiveHero = indexCardsForActiveDeck.includes(index);
 
-          const newHero = await this.hero.createHero({
+          await this.hero.createHero({
             ...omittedHero,
             battlefieldId: id,
             playerId: player.id,
@@ -173,9 +175,6 @@ export class BattlefieldService {
               ? HERO_PLACEMENT.ACTIVE_DECK
               : HERO_PLACEMENT.SELECTION_DECK,
           });
-          if (isActiveHero) {
-            createdActiveHeroesActions.push(...newHero.actions);
-          }
         }
       }
     }

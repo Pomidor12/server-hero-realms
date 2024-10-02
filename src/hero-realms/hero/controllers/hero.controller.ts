@@ -2,8 +2,8 @@ import { Body, Controller, Get, Put } from '@nestjs/common';
 
 import { HeroService } from '../services/hero/hero.service';
 
-import { HireHeroDto } from './dtos/hire-hero.dto';
-import { UseHeroActionsDto } from './dtos/use-hero-actions.dto';
+import type { HireHeroDto } from './dtos/hire-hero.dto';
+import type { UseHeroActionsDto } from './dtos/use-hero-actions.dto';
 
 @Controller({ path: 'hero', version: '1' })
 export class HeroController {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ActionCondition, HeroPlacement, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import { TakeCardActionService } from './take-card/take-card.service';
 import { DamageActionService } from './damage/damage.service';
@@ -10,7 +10,7 @@ import { HealActionService } from './heal/heal.service';
 import { ActionsWithUpdatePlacementService } from './actions-with-update-placement/actions-with-update-placement.service';
 import { ACTIONS_WITH_UPDATE_PLACEMENT } from './action.constant';
 
-import { UseActionDto } from './action.interface';
+import type { UseActionDto } from './action.interface';
 
 @Injectable()
 export class ActionsService {
@@ -26,18 +26,6 @@ export class ActionsService {
   ) {}
 
   public async useAction(dto: UseActionDto) {
-    const isSacrificeSelf =
-      dto.heroId === dto.heroIdForAction &&
-      dto.action.conditions.includes(ActionCondition.SACRIFICE);
-
-    if (isSacrificeSelf) {
-      await this.db.hero.updateMany({
-        where: { id: dto.heroIdForAction },
-        data: { placement: HeroPlacement.SACRIFICIAL_DECK },
-      });
-      return;
-    }
-
     const actionServiceName = this.getActionServiceName(dto.actionName);
 
     if (!actionServiceName) {

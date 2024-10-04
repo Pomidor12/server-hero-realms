@@ -86,20 +86,6 @@ export class PlayerService {
       },
     });
 
-    for (const hero of player.heroes) {
-      if (hero.placement === HeroPlacement.ACTIVE_DECK) {
-        await this.db.hero.update({
-          where: { id: hero.id },
-          data: { placement: HeroPlacement.RESET_DECK },
-        });
-      }
-
-      await this.db.action.updateMany({
-        where: { heroId: hero.id, isUsed: true },
-        data: { isUsed: false },
-      });
-    }
-
     const [opponentPlayer] = player.battlefield.players.filter(
       (player) => player.id !== id,
     );
@@ -113,7 +99,7 @@ export class PlayerService {
       });
     }
 
-    await this.playerHelper.takeActiveDeck(player);
+    await this.playerHelper.updateActiveDeck(player);
 
     const updatedPlayer = await this.db.player.update({
       where: { id },

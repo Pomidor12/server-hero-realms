@@ -101,6 +101,17 @@ export class BattlefieldService {
     return updatedPlayer;
   }
 
+  public async clearBattlefield(id: number) {
+    await this.db.hero.deleteMany({ where: { battlefieldId: id } });
+
+    await this.db.player.updateMany({
+      where: { battlefieldId: id },
+      data: { health: 50 },
+    });
+
+    await this.prepareBattlefield(id);
+  }
+
   public async prepareBattlefield(id: number) {
     let battlefield = await this.getBattleFiled(id);
 

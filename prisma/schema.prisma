@@ -84,6 +84,8 @@ model Player {
   currentGoldCount   Int          @default(0) @map("current_gold_count") @db.Integer()
   currentDamageCount Int          @default(0) @map("current_damage_count") @db.Integer()
   guaranteedHeroes   Int[]        @default([]) @map("guaranteed_heroes")
+  victories          Int          @default(0) @db.Integer()
+  losses             Int          @default(0) @db.Integer()
   heroes             Hero[]
 
   @@map("player")

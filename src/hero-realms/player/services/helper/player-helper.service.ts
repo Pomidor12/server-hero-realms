@@ -10,7 +10,21 @@ import type { PlayerWithHeroesRaw } from '../player.interface';
 export class PlayerHelperService {
   constructor(private readonly db: PrismaClient) {}
 
-  public async takeActiveDeck(player: PlayerWithHeroesRaw) {
+  public async updateActiveDeck(player: PlayerWithHeroesRaw) {
+    for (const hero of player.heroes) {
+      if (hero.placement === HeroPlacement.ACTIVE_DECK) {
+        await this.db.hero.update({
+          where: { id: hero.id },
+          data: { placement: HeroPlacement.RESET_DECK },
+        });
+      }
+
+      await this.db.action.updateMany({
+        where: { heroId: hero.id, isUsed: true },
+        data: { isUsed: false },
+      });
+    }
+
     let currentActiveDeckCount = 0;
 
     const selectionPlayerDeck = player.heroes.filter(

@@ -32,6 +32,11 @@ export class BattlefieldController {
     return this.battlefield.getBattleFiled(id);
   }
 
+  @Put('clear/:id')
+  public clearBattleFiled(@Param('id', ParseIntPipe) id: number) {
+    return this.battlefield.clearBattlefield(id);
+  }
+
   @Put()
   public updateBattleFiled(@Body() dto: UpdateBattlefieldDto) {
     return this.battlefield.updateBattleFiled(dto);

@@ -26,6 +26,7 @@ enum HeroPlacement {
   TRADING_DECK     @map("trading_deck")
   TRADING_ROW      @map("trading_row")
   DEFENDERS_ROW    @map("defenders_row")
+  SUPPORTS_ROW     @map("supports_row")
 
   @@map("hero_placement")
 }

@@ -37,7 +37,8 @@ export type HeroPlacement =
   | 'sacrificial-deck'
   | 'trading-deck'
   | 'trading-row'
-  | 'defenders-row';
+  | 'defenders-row'
+  | 'supports-row';
 
 export type HeroRaw = Hero & { actions: Action[] };
 

@@ -400,7 +400,7 @@
       "name": "Гай",
       "image": "Guy.png",
       "fraction": "Наруто",
-      "price": 7,
+      "price": 5,
       "protection": 6,
       "isGuardian": false,
       "actions": [
@@ -820,6 +820,63 @@
           "isOptional": false,
           "damage": 6,
           "putToDeckResetedCard": 1
+        }
+      ]
+    },
+    {
+      "name": "Ай",
+      "image": "Ai.png",
+      "fraction": "",
+      "price": 2,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": true,
+          "heal": 3
+        }
+      ]
+    },
+    {
+      "name": "Лайт",
+      "image": "Light.png",
+      "fraction": "",
+      "price": 2,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": true,
+          "damage": 3
+        }
+      ]
+    },
+    {
+      "name": "Эл",
+      "image": "L.png",
+      "fraction": "",
+      "price": 2,
+      "isGuardian": false,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 2
+        },
+        {
+          "conditions": ["sacrifice"],
+          "isOptional": true,
+          "damage": 3
         }
       ]
     }

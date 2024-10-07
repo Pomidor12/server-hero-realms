@@ -6,7 +6,10 @@ import omit from 'lodash.omit';
 import { CONVERT_ACTION_CONDITION } from '../../enums/action-condition.enum';
 import { ADDITIONAL_ACTION_INFO, DATASET_PATH_FILE } from './hero.constant';
 import { BattlefieldService } from 'src/hero-realms/battlefield/services/battlefield.service';
-import { CONVERT_HERO_PLACEMENT } from '../../enums/hero-placement.enum';
+import {
+  CONVERT_HERO_PLACEMENT,
+  HERO_PLACEMENT,
+} from '../../enums/hero-placement.enum';
 import { CLIENT_MESSAGES } from 'src/hero-realms/battlefield/battlefield.constant';
 import { getRandomNumber } from 'src/hero-realms/utils/math';
 import {
@@ -93,7 +96,10 @@ export class HeroService {
       include: { heroes: { include: { actions: true } } },
     });
 
-    const hero = await this.db.hero.findUnique({ where: { id: dto.heroId } });
+    const hero = await this.db.hero.findUnique({
+      where: { id: dto.heroId },
+      include: { actions: true },
+    });
 
     if (!player || !hero) {
       return;
@@ -107,35 +113,48 @@ export class HeroService {
       return 'Недостаточно голды';
     }
 
-    await this.db.hero.update({
-      where: { id: dto.heroId },
-      data: {
-        playerId: dto.playerId,
-        placement: dto.putToSelectionDeck
-          ? HeroPlacement.SELECTION_DECK
-          : HeroPlacement.RESET_DECK,
-      },
-    });
+    if (hero.placement === HeroPlacement.SUPPORTS_ROW) {
+      const nomalized = {
+        ...this.normalizeHero(hero),
+        placement: HERO_PLACEMENT.RESET_DECK,
+      };
 
-    const tradingDeckHeroes = await this.db.hero.findMany({
-      where: {
-        battlefieldId: player.battlefieldId,
-        placement: HeroPlacement.TRADING_DECK,
-      },
-    });
-
-    if (tradingDeckHeroes.length) {
-      const newRandomHeroIndex = getRandomNumber(
-        0,
-        tradingDeckHeroes.length - 1,
-      );
-
+      const newH = await this.createHero(omit(nomalized, 'id'));
       await this.db.hero.update({
-        where: { id: tradingDeckHeroes[newRandomHeroIndex].id },
+        where: { id: newH.id },
+        data: { playerId: player.id, battlefieldId: player.battlefieldId },
+      });
+    } else {
+      await this.db.hero.update({
+        where: { id: dto.heroId },
         data: {
-          placement: HeroPlacement.TRADING_ROW,
+          playerId: dto.playerId,
+          placement: dto.putToSelectionDeck
+            ? HeroPlacement.SELECTION_DECK
+            : HeroPlacement.RESET_DECK,
         },
       });
+
+      const tradingDeckHeroes = await this.db.hero.findMany({
+        where: {
+          battlefieldId: player.battlefieldId,
+          placement: HeroPlacement.TRADING_DECK,
+        },
+      });
+
+      if (tradingDeckHeroes.length) {
+        const newRandomHeroIndex = getRandomNumber(
+          0,
+          tradingDeckHeroes.length - 1,
+        );
+
+        await this.db.hero.update({
+          where: { id: tradingDeckHeroes[newRandomHeroIndex].id },
+          data: {
+            placement: HeroPlacement.TRADING_ROW,
+          },
+        });
+      }
     }
 
     await this.db.player.update({

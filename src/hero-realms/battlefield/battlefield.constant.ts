@@ -5,6 +5,8 @@ export const INITIAL_CARDS_COUNT = {
   SECOND_PLAYER: 5,
 };
 
+export const BASE_HEROES = ['Ято', 'Ехидна', 'Зангецу', 'Мусаши'];
+
 export const CLIENT_MESSAGES = {
   PREPARE_BATTLEFIELD: 'client:prepare-battlefiled',
   BATTLEFIELD_UPDATED: 'client:battlefiled-updated',
@@ -14,5 +16,3 @@ export const CLIENT_MESSAGES = {
 
 export const TRANSPORTS = ['websocket'];
 export const NAMESPACE = 'battlefiled';
-
-export const BASE_HEROES = ['Ято', 'Ехидна', 'Зангецу', 'Мусаши'];

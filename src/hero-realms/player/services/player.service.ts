@@ -78,45 +78,49 @@ export class PlayerService {
   }
 
   public async endPlayerMove(id: number) {
-    const player = await this.db.player.findUnique({
-      where: { id },
-      include: {
-        battlefield: { include: { players: true } },
-        heroes: true,
-      },
-    });
-
-    const [opponentPlayer] = player.battlefield.players.filter(
-      (player) => player.id !== id,
-    );
-
-    if (opponentPlayer) {
-      await this.db.player.update({
-        where: { id: opponentPlayer.id },
-        data: {
-          currentTurnPlayer: true,
+    try {
+      const player = await this.db.player.findUnique({
+        where: { id },
+        include: {
+          battlefield: { include: { players: true } },
+          heroes: true,
         },
       });
+
+      const [opponentPlayer] = player.battlefield.players.filter(
+        (player) => player.id !== id,
+      );
+
+      if (opponentPlayer) {
+        await this.db.player.update({
+          where: { id: opponentPlayer.id },
+          data: {
+            currentTurnPlayer: true,
+          },
+        });
+      }
+
+      await this.playerHelper.updateActiveDeck(player);
+
+      const updatedPlayer = await this.db.player.update({
+        where: { id },
+        data: {
+          currentTurnPlayer: false,
+          currentGoldCount: 0,
+          currentDamageCount: 0,
+          guaranteedHeroes: player.guaranteedHeroes,
+        },
+      });
+
+      await this.battlefield.getBattlefieldAndNotifyAllSubs(
+        CLIENT_MESSAGES.BATTLEFIELD_UPDATED,
+        updatedPlayer.battlefieldId,
+      );
+
+      return updatedPlayer;
+    } catch (error) {
+      console.log(error);
     }
-
-    await this.playerHelper.updateActiveDeck(player);
-
-    const updatedPlayer = await this.db.player.update({
-      where: { id },
-      data: {
-        currentTurnPlayer: false,
-        currentGoldCount: 0,
-        currentDamageCount: 0,
-        guaranteedHeroes: player.guaranteedHeroes,
-      },
-    });
-
-    await this.battlefield.getBattlefieldAndNotifyAllSubs(
-      CLIENT_MESSAGES.BATTLEFIELD_UPDATED,
-      updatedPlayer.battlefieldId,
-    );
-
-    return updatedPlayer;
   }
 
   public async attackPlayer(dto: AttackPlayerDto) {

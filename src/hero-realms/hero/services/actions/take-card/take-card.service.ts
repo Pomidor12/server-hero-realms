@@ -22,7 +22,9 @@ export class TakeCardActionService extends IAction {
     });
 
     const playerSelectionDeck = dto.player.heroes.filter(
-      (hero) => hero.placement === HeroPlacement.SELECTION_DECK,
+      (hero) =>
+        hero.placement === HeroPlacement.SELECTION_DECK ||
+        hero.placement === HeroPlacement.RESET_DECK,
     );
 
     let takedCardCount = 0;
@@ -31,8 +33,12 @@ export class TakeCardActionService extends IAction {
       playerSelectionDeck.length - 1,
       takeCardValue - dto.player.guaranteedHeroes.length,
     );
-    console.log(randomCards);
-    console.log(dto.player.guaranteedHeroes);
+    console.log({ randomCards });
+    console.log(
+      'guaranteed',
+      dto.player.guaranteedHeroes,
+      playerSelectionDeck.map((h) => h.name),
+    );
     for (const [index, hero] of playerSelectionDeck.entries()) {
       if (takedCardCount >= takeCardValue) {
         break;

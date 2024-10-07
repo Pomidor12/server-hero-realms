@@ -106,7 +106,13 @@ export class BattlefieldService {
 
     await this.db.player.updateMany({
       where: { battlefieldId: id },
-      data: { health: 50 },
+      data: {
+        health: 50,
+        guaranteedHeroes: [],
+        currentDamageCount: 0,
+        currentGoldCount: 0,
+        currentTurnPlayer: false,
+      },
     });
 
     await this.prepareBattlefield(id);
@@ -114,15 +120,17 @@ export class BattlefieldService {
 
   public async prepareBattlefield(id: number) {
     let battlefield = await this.getBattleFiled(id);
-
+    console.log(battlefield);
     if (battlefield.players.length < MIN_BATTLEFIELD_PLAYERS_COUNT) {
       return;
     }
 
     const heroes = await this.hero.getHeroes();
-
+    console.log(heroes);
     if (!battlefield.heroes.length) {
-      const heroesForTrade = heroes.filter((hero) => hero.price);
+      const heroesForTrade = heroes.filter(
+        (hero) => hero.price && hero.fraction,
+      );
 
       const indexCardsForTraidingRow = getRandomNumbers(
         0,
@@ -140,6 +148,18 @@ export class BattlefieldService {
             : HERO_PLACEMENT.TRADING_DECK,
         });
       }
+
+      const supportHeroes = heroes.filter(
+        (hero) => hero.price && !hero.fraction,
+      );
+      for (const hero of supportHeroes.values()) {
+        const omittedHero = omit(hero, 'id');
+        await this.hero.createHero({
+          ...omittedHero,
+          battlefieldId: id,
+          placement: HERO_PLACEMENT.SUPPORTS_ROW,
+        });
+      }
     }
 
     const filteredPlayers = battlefield.players.filter(
@@ -155,9 +175,8 @@ export class BattlefieldService {
         where: { id: playerToChangeTurnOrder.id },
       });
 
-      const baseHeroes = heroes.filter((hero) =>
-        BASE_HEROES.includes(hero.name),
-      );
+      const baseHeroes = heroes.filter((hero) => !hero.price);
+
       const cardForDuplicate = baseHeroes.find((hero) => hero.name === 'Ято');
       const duplicates = new Array(4).fill(cardForDuplicate);
       baseHeroes.push(...duplicates);

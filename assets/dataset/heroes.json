@@ -879,6 +879,41 @@
           "damage": 3
         }
       ]
+    },
+    {
+      "name": "Тоджи",
+      "image": "Toji.png",
+      "fraction": "JujutsuKaisen",
+      "price": 6,
+      "isGuardian": true,
+      "protection": 6,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "damage": 5
+        }
+      ]
+    },
+    {
+      "name": "Нанами",
+      "image": "Nanami.png",
+      "fraction": "JujutsuKaisen",
+      "price": 5,
+      "isGuardian": true,
+      "protection": 3,
+      "actions": [
+        {
+          "conditions": [],
+          "isOptional": false,
+          "gold": 3
+        },
+        {
+          "conditions": ["fraction"],
+          "isOptional": false,
+          "damage": 4
+        }
+      ]
     }
   ]
 }
